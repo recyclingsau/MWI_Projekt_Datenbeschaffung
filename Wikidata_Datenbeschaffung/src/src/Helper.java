@@ -123,10 +123,12 @@ public class Helper {
 		// Standard is user.dir
 		// TODO: Als Einstellung für Administrator freischalten
 		try {
-			dumpProcessingController.setDownloadDirectory(System
-					.getProperty("user.dir"));
+//			dumpProcessingController.setDownloadDirectory(System
+//					.getProperty("user.dir"));
+			dumpProcessingController.setDownloadDirectory("C:\\wikidata\\");
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.out.println("Kein Zugriff auf Dumpfiles möglich!");
 			// TODO: Kein Zugriff auf Dumpfiles -> Keine Verarbeitung. Abbruch!
 		}
 
