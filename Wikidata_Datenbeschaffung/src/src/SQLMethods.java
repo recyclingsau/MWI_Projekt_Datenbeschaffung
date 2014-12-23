@@ -34,7 +34,8 @@ public class SQLMethods {
 	/**
 	 * Opens connection to database using {@link com.mysql.jdbc.Driver}
 	 * 
-	 * @return Connection to work with. Returns null, if no connection possible. AutoCommit is FALSE!
+	 * @return Connection to work with. Returns null, if no connection possible.
+	 *         AutoCommit is FALSE!
 	 * 
 	 *         TODO: Es muss sichergestellt werden, dass eine Verbindung zur DB
 	 *         besteht, bevor die Dumps verarbeitet werden. Falls nicht, muss
@@ -52,8 +53,9 @@ public class SQLMethods {
 		Connection con = null;
 
 		try {
-			con = DriverManager
-					.getConnection("jdbc:mysql://" + Helper.DATABASE_PATH + "?user=" + Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
+			con = DriverManager.getConnection("jdbc:mysql://"
+					+ Helper.DATABASE_PATH + "?user=" + Helper.DB_USERNAME
+					+ "&password=" + Helper.DB_PASSWORD);
 			con.setAutoCommit(false);
 			return con;
 		} catch (SQLException e) {
@@ -189,44 +191,51 @@ public class SQLMethods {
 	 */
 	public static void createItemDeletionStatements(String tableName) {
 
-		// SQL to empty alias-table
-		String query_alias = "DELETE FROM wikidata." + tableName + "_alias;";
-		queries.add(query_alias);
+		// Lock and empty alias-table
+//		String lock_alias = "LOCK TABLE wikidata." + tableName
+//				+ "_alias WRITE;";
+//		queries.add(lock_alias);
+		String empty_alias = "DELETE FROM wikidata." + tableName + "_alias;";
+		queries.add(empty_alias);
 
-		// SQL to empty label-table
-		String query_label = "DELETE FROM wikidata." + tableName + "_label;";
-		queries.add(query_label);
+		// Lock and empty label-table
+//		String lock_label = "LOCK TABLE wikidata." + tableName
+//				+ "_label WRITE;";
+//		queries.add(lock_label);
+		String empty_label = "DELETE FROM wikidata." + tableName + "_label;";
+		queries.add(empty_label);
 
-		// SQL to empty descriptions-table
-		String query_desc = "DELETE FROM wikidata." + tableName + "_desc;";
-		queries.add(query_desc);
+		// Lock and empty descriptions-table
+//		String lock_desc = "LOCK TABLE wikidata." + tableName + "_desc WRITE;";
+//		queries.add(lock_desc);
+		String empty_desc = "DELETE FROM wikidata." + tableName + "_desc;";
+		queries.add(empty_desc);
 
-		// SQL to empty claims-table
-		String query_claim = "DELETE FROM wikidata." + tableName + "_claim;";
-		queries.add(query_claim);
+		// Lock and empty claim-table
+//		String lock_claim = "LOCK TABLE wikidata." + tableName
+//				+ "_claim WRITE;";
+//		queries.add(lock_claim);
+		String empty_claim = "DELETE FROM wikidata." + tableName + "_claim;";
+		queries.add(empty_claim);
 
-		// SQL to empty link-table
-		String query_link = "DELETE FROM wikidata." + tableName + "_link;";
-		queries.add(query_link);
+		// Lock and empty link-table
+//		String lock_link = "LOCK TABLE wikidata." + tableName + "_link WRITE;";
+//		queries.add(lock_link);
+		String empty_link = "DELETE FROM wikidata." + tableName + "_link;";
+		queries.add(empty_link);
 
 	}
 
 	/**
-	 * Create and store SQL statements to empty GUI-text-table
+	 * Create and store SQL statements to empty other tables
 	 */
-	public static void createGuiTextsDeletionStatement() {
+	public static void createOtherDeletionStatement(String tableName) {
 
-		String query = "DELETE FROM wikidata.GUI_TEXTS;";
-		queries.add(query);
-	}
+//		String lock = "LOCK TABLE wikidata." + tableName + " WRITE;";
+//		queries.add(lock);
 
-	/**
-	 * Create and store SQL statements to empty languages-table
-	 */
-	public static void createLanguagesDeletionStatement() {
-
-		String query = "DELETE FROM wikidata.languages;";
-		queries.add(query);
+		String empty = "DELETE FROM wikidata." + tableName + ";";
+		queries.add(empty);
 	}
 
 	/**
@@ -449,7 +458,7 @@ public class SQLMethods {
 	/**
 	 * Create connection to DB and execute predefined SQL queries
 	 */
-	protected static void executeQueries() {
+	protected static boolean executeQueries() {
 
 		Connection con = openSQLconnection();
 
@@ -461,8 +470,7 @@ public class SQLMethods {
 				String query = queryIterator.next();
 
 				// Print query
-				// TODO: In Logger ablösen
-				System.out.println(query);
+				EntityTimerProcessor.logger.debug(query);
 
 				// Create and execute statement
 				Statement stmt = con.createStatement();
@@ -472,7 +480,12 @@ public class SQLMethods {
 
 			con.commit();
 
+			return true;
+
 		} catch (SQLException e) {
+			EntityTimerProcessor.logger.error(e.getMessage());
+			EntityTimerProcessor.logger.info("Trying to rollback work...");
+
 			try {
 				// Rollback everything at error
 				con.rollback();
@@ -481,16 +494,20 @@ public class SQLMethods {
 				// Rollback was not successful.
 				// Maybe connection is lost. In this case, DBMS should rollback
 				// by itself
-				e1.printStackTrace();
+				EntityTimerProcessor.logger
+						.error("Rollback not successful. Please check data integrity of DB!");
+				return false;
 			}
-			e.printStackTrace();
+			return false;
+
 		} finally {
 			if (con != null) {
 				try {
 					// Close connection
 					con.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					EntityTimerProcessor.logger
+							.error("Connection to DB could not be closed!");
 				}
 			}
 		}

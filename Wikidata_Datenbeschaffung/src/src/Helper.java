@@ -25,8 +25,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Calendar;
 
 import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -69,14 +71,14 @@ public class Helper {
 	 */
 	public static int TIMEOUT_SEC = 100;
 
-	public static int 		UPDATE_INTERVAL_SEC = 10;
-	public static String 	LOGFILE_PATH 		= "C:\\wikidata\\logfiles";
-	public static String 	LOGGING_LEVEL 		= "INFO";
-	public static String 	DUMPFILE_PATH 		= "C:\\wikidata";
-	public static int 		BLOCK_SIZE 			= 10000;
-	public static String 	DATABASE_PATH 		= "localhost";
-	public static String 	DB_USERNAME 		= "";
-	public static String 	DB_PASSWORD 		= "";
+	public static int UPDATE_INTERVAL_SEC = 10;
+	public static String LOGFILE_PATH = "C:\\wikidata\\logfiles";
+	public static String LOGGING_LEVEL = "INFO";
+	public static String DUMPFILE_PATH = "C:\\wikidata";
+	public static int BLOCK_SIZE = 10000;
+	public static String DATABASE_PATH = "localhost";
+	public static String DB_USERNAME = "";
+	public static String DB_PASSWORD = "";
 
 	/**
 	 * Collects all sites of the Wikimedia Foundation that can be linked in
@@ -93,22 +95,57 @@ public class Helper {
 	 * 
 	 * @author Markus Kroetzsch
 	 * 
-	 *         TODO: Ablösen durch eigenen Logger?
 	 */
 	public static void configureLogging() {
 		// Create the appender that will write log messages to the console.
 		ConsoleAppender consoleAppender = new ConsoleAppender();
+		FileAppender fileAppender = new FileAppender();
+
+		// Get timestamp for logfilepath
+		Calendar rightNow = Calendar.getInstance();
+
+		String year = "" + rightNow.get(Calendar.YEAR);
+		String month = "" + rightNow.get(Calendar.MONTH);
+		String date = "" + rightNow.get(Calendar.DATE);
+		String hour = "" + rightNow.get(Calendar.HOUR);
+		String minute = "" + rightNow.get(Calendar.MINUTE);
+		String second = "" + rightNow.get(Calendar.SECOND);
+
+		if (month.length() == 1)
+			month = "0" + month;
+		if (date.length() == 1)
+			date = "0" + date;
+		if (hour.length() == 1)
+			hour = "0" + hour;
+		if (minute.length() == 1)
+			minute = "0" + minute;
+		if (second.length() == 1)
+			second = "0" + second;
+
+		String timestamp = year + "_" + month + "_" + date + "-" + hour + "_" + minute + "_" + second;
+
+		fileAppender.setFile(LOGFILE_PATH + "\\" + timestamp + ".txt");
+
+		String pattern;
 
 		// Define the pattern of log messages.
-		// Insert the string "%c{1}:%L" to also show class name and line.
-		String pattern = "%d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
+		if (Helper.LOGGING_LEVEL.equalsIgnoreCase(Level.INFO.toString())) {
+			pattern = "%d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
+		} else {
+			// Add name of class and line number
+			pattern = "%c{1}:%L %d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
+		}
 		consoleAppender.setLayout(new PatternLayout(pattern));
+		fileAppender.setLayout(new PatternLayout(pattern));
 
 		// Change to Level.ERROR for fewer messages:
 		consoleAppender.setThreshold(Level.toLevel(Helper.LOGGING_LEVEL));
+		fileAppender.setThreshold(Level.toLevel(Helper.LOGGING_LEVEL));
 
 		consoleAppender.activateOptions();
+		fileAppender.activateOptions();
 		Logger.getRootLogger().addAppender(consoleAppender);
+		Logger.getRootLogger().addAppender(fileAppender);
 	}
 
 	/**
@@ -126,14 +163,14 @@ public class Helper {
 			try {
 				while ((line = br.readLine()) != null) {
 
-					if( ! line.equals("") && ! line.substring(0, 2).equals("--")){
-						
+					if (!line.equals("") && !line.substring(0, 2).equals("--")) {
+
 						// Remove whitespaces
 						line = line.replaceAll(" ", "");
 						attribute = line.split("=")[0];
 						value = line.split("=")[1];
-						
-						switch(attribute){
+
+						switch (attribute) {
 						case "UPDATE_INTERVAL_SEC":
 							UPDATE_INTERVAL_SEC = Integer.parseInt(value);
 							break;
@@ -172,8 +209,9 @@ public class Helper {
 				e.printStackTrace();
 			}
 		} catch (FileNotFoundException e) {
-			// TODO: Abbruch und Ausgabe durch Logger ablösen
-			System.out.println("custom_properties-Datei nicht gefunden. Abbruch!");
+			// TODO: Abbruch
+			System.out
+					.println("custom_properties-Datei nicht gefunden. Abbruch!");
 			e.printStackTrace();
 		}
 	}
@@ -187,8 +225,9 @@ public class Helper {
 	 *            the object to use for processing entities in this dump
 	 * 
 	 * @author Markus Kroetzsch
+	 * @author Marco Kinkel
 	 */
-	public static void processEntitiesFromWikidataDump(
+	public static boolean processEntitiesFromWikidataDump(
 			EntityDocumentProcessor entityDocumentProcessor) {
 
 		// Controller object for processing dumps
@@ -205,23 +244,29 @@ public class Helper {
 			// .getProperty("user.dir"));
 			dumpProcessingController.setDownloadDirectory(DUMPFILE_PATH);
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Kein Zugriff auf Dumpfiles möglich!");
-			// TODO: Kein Zugriff auf Dumpfiles -> Keine Verarbeitung. Abbruch!
+			EntityTimerProcessor.logger
+					.error("Can't read dumpfiles! Aborting...");
+
+			return false;
+			// TODO: Abbruch nur bei
+			// OFFLINE_MODE == true, da ja nicht auf eine Online-Verbindung
+			// gewartet werden kann?
 		}
 
 		// Download the sites table dump and extract information
 		try {
 			sites = dumpProcessingController.getSitesInformation();
-		} catch (IOException e) {
-			e.printStackTrace();
-			// TODO: Seiten können nicht geladen werden. Abbruch bei
+		} catch (Exception e) {
+			EntityTimerProcessor.logger
+					.error("Can't read sitefiles! Aborting...");
+
+			return false;
+			// TODO: Abbruch nur bei
 			// OFFLINE_MODE == true, da ja nicht auf eine Online-Verbindung
 			// gewartet werden kann?
 		}
 
 		// Also add a timer that reports some basic progress information
-		// TODO: Ablösung durch eigenen Timer/Logger?
 		EntityTimerProcessor entityTimerProcessor = new EntityTimerProcessor(
 				TIMEOUT_SEC);
 		dumpProcessingController.registerEntityDocumentProcessor(
@@ -235,10 +280,14 @@ public class Helper {
 			// Start processing (may trigger downloads where needed)
 			dumpProcessingController.processMostRecentJsonDump();
 		} catch (TimeoutException e) {
+			EntityTimerProcessor.logger.info("Reached timer of " + TIMEOUT_SEC
+					+ " seconds.");
 			// Timer created manual timeout. No further errorhandling
 		}
 
 		// Print final timer results
-		entityTimerProcessor.stop();
+		entityTimerProcessor.stop(); // Hammer Time!
+
+		return true;
 	}
 }

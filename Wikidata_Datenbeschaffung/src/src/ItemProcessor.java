@@ -71,9 +71,24 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	public int personsCount = 0;
 
 	/**
-	 * Counts the found properties in all items
+	 * Counts the found education institutes in all items
 	 */
-	public int propertyCount = 0;
+	public int educationInstitutesCount = 0;
+
+	/**
+	 * Counts the found cities in all items
+	 */
+	public int citiesCount = 0;
+
+	/**
+	 * Counts the found states in all items
+	 */
+	public int statesCount = 0;
+
+	/**
+	 * Counts the found GUI-Texts in all items
+	 */
+	public int guiTextsCount = 0;
 
 	// TODO: Bei Einfügen neuer Items:
 	// public int *item*Count = 0;
@@ -91,6 +106,24 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	public ArrayList<ItemDocument> jobs = new ArrayList<ItemDocument>();
 
 	/**
+	 * Collects all found education institues as instances of
+	 * {@link org.wikidata.wdtk.datamodel.interfaces.ItemDocument}.
+	 */
+	public ArrayList<ItemDocument> educationInstitutes = new ArrayList<ItemDocument>();
+
+	/**
+	 * Collects all found cities as instances of
+	 * {@link org.wikidata.wdtk.datamodel.interfaces.ItemDocument}.
+	 */
+	public ArrayList<ItemDocument> cities = new ArrayList<ItemDocument>();
+
+	/**
+	 * Collects all found states as instances of
+	 * {@link org.wikidata.wdtk.datamodel.interfaces.ItemDocument}.
+	 */
+	public ArrayList<ItemDocument> states = new ArrayList<ItemDocument>();
+
+	/**
 	 * Collects all found Properties as instances of
 	 * {@link org.wikidata.wdtk.datamodel.interfaces.PropertyDocument}.
 	 */
@@ -98,12 +131,6 @@ public class ItemProcessor implements EntityDocumentProcessor {
 
 	// TODO: Bei Einfügen neuer Items:
 	// public ArrayList<ItemDocument> *item* = new ArrayList<ItemDocument>();
-
-	/**
-	 * Filter to check if item is a human
-	 */
-	static final ItemIdValue humanFilterClass = Datamodel
-			.makeWikidataItemIdValue("Q5");
 
 	/**
 	 * Filter to check if item is a job
@@ -130,9 +157,14 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	public void processItemDocument(ItemDocument itemDocument) {
 		this.itemCount++;
 
-		boolean isHuman = false;
-		boolean hasAlmaMater = false;
+		boolean isPerson = false;
 		boolean isJob = false;
+		boolean isEducationInstitute = false;
+		boolean isCity = false;
+		boolean isState = false;
+
+		// TODO: Bei Einfügen neuer Items:
+		// boolean is*Item* = false;
 
 		// Read ID of entity and check, if it's needed in the gui texts. Add it
 		// to the List then.
@@ -146,12 +178,9 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		case "Q508719": // Alumni
 		case "Q319608": // Address
 			// TODO: Bei Einfügen neuer GUI-Texte mit Q-ID
-
+			guiTextsCount++;
 			guiElements.add(itemDocument);
 		}
-
-		// TODO: Bei Einfügen neuer Items:
-		// boolean is*Item* = false;
 
 		// Iterate over all statements of the current item and filter by its
 		// properties
@@ -159,7 +188,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			switch (statementGroup.getProperty().getId()) {
 
 			case "P69": // = "alma mater"
-				hasAlmaMater = true;
+				isPerson = true;
 				break;
 
 			case "P31": // = "instance of"
@@ -168,7 +197,6 @@ public class ItemProcessor implements EntityDocumentProcessor {
 				 * Check by defined filters, if the value of property P31 is a
 				 * searched Entity
 				 */
-				isHuman = containsValue(statementGroup, humanFilterClass);
 				isJob = containsValue(statementGroup, jobFilterClass);
 				break;
 
@@ -185,15 +213,33 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		 */
 
 		// Check if item is person
-		if (isHuman && hasAlmaMater) {
-			this.personsCount++;
+		if (isPerson) {
+			personsCount++;
 			persons.add(itemDocument);
 		}
 
 		// Check if item is job
 		if (isJob) {
-			this.jobsCount++;
+			jobsCount++;
 			jobs.add(itemDocument);
+		}
+
+		// Check if item is education institue
+		if (isEducationInstitute) {
+			educationInstitutesCount++;
+			educationInstitutes.add(itemDocument);
+		}
+
+		// Check if item is city
+		if (isCity) {
+			citiesCount++;
+			cities.add(itemDocument);
+		}
+
+		// Check if item is state
+		if (isState) {
+			statesCount++;
+			states.add(itemDocument);
 		}
 
 		// TODO: Bei Einfügen neuer Items :
@@ -205,12 +251,6 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		 * wantedItemArrayList.add(itemDocument); }
 		 */
 
-		// Print status every 100.000 processed items
-		// TODO: Von Logger ablösen
-		if (this.itemCount % 100000 == 0) {
-			printStatus();
-		}
-
 		/*
 		 * Because of heap memory problems we have to process our stored items
 		 * now and then. After we converted them into SQL-Statements, we can
@@ -220,14 +260,14 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		 * wie geplant. Läuft bei 3GB Heap trotzdem voll!
 		 */
 
-		if (persons.size() >= Helper.BLOCK_SIZE) {
+		if (persons.size() + jobs.size() + educationInstitutes.size()
+				+ cities.size() + states.size() >= Helper.BLOCK_SIZE) {
 
 			// Status message
-			// TODO: In Logger implementieren
-			System.out
-					.println("" + Helper.BLOCK_SIZE + " 10000 Personen erreicht. Erstelle SQL-Befehle!");
+			EntityTimerProcessor.logger.info("Reached " + Helper.BLOCK_SIZE
+					+ " hits. Create SQL-statements...");
 
-			// Convert objects in this.jobs-List to Instances of
+			// Convert found objects to Instances of
 			// entities.Item for easier handling.
 			//
 			// TODO: Eigentlich wird nichts außer den Claims konvertiert.
@@ -236,49 +276,23 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			// Auge haben denn dieser Schritt wird ja nur ein paar mal
 			// aufgerufen
 			convertItemsAndCreateSQL(persons, "PERSONS");
-
-			// Clear this.persons-List to free memory
-			persons.clear();
-
-			// Status message
-			// TODO: In Logger implementieren
-			System.out.println("Erstellung der SQL-Befehle abgeschlossen!");
-		}
-
-		if (jobs.size() >= Helper.BLOCK_SIZE) { 
-
-			// Status message
-			// TODO: In Logger implementieren
-			System.out.println("" + Helper.BLOCK_SIZE + " 10000 Jobs erreicht. Erstelle SQL-Befehle!");
-
-			// Convert objects in this.jobs-List to Instances of
-			// entities.Item for easier handling.
-			//
-			// TODO: Wie oben
 			convertItemsAndCreateSQL(jobs, "JOBS");
+			convertItemsAndCreateSQL(educationInstitutes, "EDUCATIONINSTITUTES");
+			convertItemsAndCreateSQL(cities, "CITIES");
+			convertItemsAndCreateSQL(states, "STATES");
+			// TODO: Bei Einfügen neuer Items
 
-			// Clear this.jobs-List to free memory
+			// Clear lists to free memory
+			persons.clear();
 			jobs.clear();
+			educationInstitutes.clear();
+			cities.clear();
+			states.clear();
+			// TODO: Bei Einfügen neuer Items
 
 			// Status message
-			// TODO: In Logger implementieren
-			System.out.println("Erstellung der SQL-Befehle abgeschlossen!");
+			EntityTimerProcessor.logger.info("Creation of SQL-Statements successful!");
 		}
-
-		// TODO: Bei Einfügen neuer Items:
-		/*
-		 * 
-		 * System.out.println("" + Helper.BLOCK_SIZE + " Jobs erreicht. Erstelle SQL-Befehle!");
-		 * 
-		 * if (*itemsList*.size() >= Helper.BLOCK_SIZE) {
-		 * 
-		 * System.out.println("10000 *Items* erreicht. Schreibe in Datenbank!");
-		 * 
-		 * convertAndWriteItemsToDB(*itemsList*, "*ITEMS (Tabellenname)*");
-		 * 
-		 * System.out.println("Erstellung der SQL-Befehle abgeschlossen!");
-		 */
-
 	}
 
 	/**
@@ -295,7 +309,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	@Override
 	public void processPropertyDocument(PropertyDocument propertyDocument) {
 
-		this.propertyCount++;
+		guiTextsCount++;
 
 		// Read ID of property and check, if it's needed in the gui texts. Add
 		// it to the List then.
@@ -343,18 +357,6 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	}
 
 	/**
-	 * Prints the current status to the system output.
-	 * 
-	 * @author Markus Kroetzsch
-	 * 
-	 *         TODO: Überarbeiten... Evtl in Logger integrieren!
-	 */
-	private void printStatus() {
-		System.out.println("*** Found " + personsCount + " Persons and "
-				+ jobsCount + " Jobs within " + itemCount + " items.");
-	}
-
-	/**
 	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.ItemDocument}s to
 	 * {@link entities.Item}s, creates and stores SQL-statements to write them
 	 * into the DB later on.
@@ -396,8 +398,8 @@ public class ItemProcessor implements EntityDocumentProcessor {
 
 	/**
 	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.gui-textDocument}s
-	 * to {@link entities.WikidataObject}s, creates and stores SQL-statements to write
-	 * them into the DB later on.
+	 * to {@link entities.WikidataObject}s, creates and stores SQL-statements to
+	 * write them into the DB later on.
 	 * 
 	 * @param termedDocuments
 	 *            List of gui-textDocuments to be converted
@@ -523,8 +525,8 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	}
 
 	/**
-	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.TermedDocument}
-	 * to {@link entities.WikidataObject}.
+	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.TermedDocument} to
+	 * {@link entities.WikidataObject}.
 	 * 
 	 * @param termedDoc
 	 *            The PropertyDocument to be converted

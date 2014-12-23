@@ -24,19 +24,17 @@ public class Main {
 		// Initialize and configure logging for periodically println of status
 		Helper.configureLogging();
 
-		System.out.println("Lösche Datenbank...");
-
+		EntityTimerProcessor.logger.info("Create statements to empty DB.");
+		
 		// Empty all non-static DB-Tables
 		SQLMethods.createItemDeletionStatements("PERSONS");
 		SQLMethods.createItemDeletionStatements("JOBS");
 		SQLMethods.createItemDeletionStatements("EDUCATIONINSTITUTES");
 		SQLMethods.createItemDeletionStatements("CITIES");
 		SQLMethods.createItemDeletionStatements("STATES");
-		SQLMethods.createItemDeletionStatements("JOBS");
-		SQLMethods.createGuiTextsDeletionStatement();
-		SQLMethods.createLanguagesDeletionStatement();
-
 		// TODO: When adding new tables - Call deletion-method!
+		SQLMethods.createOtherDeletionStatement("GUI_TEXTS");
+		SQLMethods.createOtherDeletionStatement("LANGUAGES");
 
 		// Create processor to read and process wikidata-dump
 		ItemProcessor processor = new ItemProcessor();
@@ -46,7 +44,13 @@ public class Main {
 		// Data gets processed in methods {@link
 		// ItemProcessor#processItemDocument} and
 		// {@link ItemProcessor#processPropertyDocument}
-		Helper.processEntitiesFromWikidataDump(processor);
+		boolean successful = Helper.processEntitiesFromWikidataDump(processor);
+		
+		// If error occured, end program
+		if(!successful){
+			EntityTimerProcessor.logger.info("No success. End of program.");
+			return;
+		}
 
 		// Items from Wikidata were processed in blocks of a defined amount.
 		// The last blocks (with less entries than the maximum amount per block)
@@ -54,10 +58,15 @@ public class Main {
 		processor.convertAllAndCreateSQL();
 
 		// Connect to database and execute all saved queries
-		SQLMethods.executeQueries();
+		successful = SQLMethods.executeQueries();
+		
+		// If error occured, end program
+		if(!successful){
+			EntityTimerProcessor.logger.info("End of program.");
+			return;
+		}
 
-		System.out.println("Fertig!");
-
+		EntityTimerProcessor.logger.info("End of program.");
+		
 	}
-
 }

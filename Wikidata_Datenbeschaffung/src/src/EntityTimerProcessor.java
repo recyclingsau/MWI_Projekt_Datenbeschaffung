@@ -37,13 +37,14 @@ import org.wikidata.wdtk.util.Timer;
  * exception at a higher level.
  *
  * @author Markus Kroetzsch
+ * @author Marco Kinkel
  *
  */
 public class EntityTimerProcessor implements EntityDocumentProcessor {
 
 	static final Logger logger = LoggerFactory
 			.getLogger(EntityTimerProcessor.class);
-
+	
 	final Timer timer = Timer.getNamedTimer("EntityTimerProcessor");
 	final int timeout;
 	int entityCount = 0;
@@ -57,6 +58,7 @@ public class EntityTimerProcessor implements EntityDocumentProcessor {
 	 */
 	public EntityTimerProcessor(int timeout) {
 		this.timeout = timeout;
+		
 	}
 
 	@Override
@@ -96,7 +98,6 @@ public class EntityTimerProcessor implements EntityDocumentProcessor {
 				this.lastSeconds = seconds;
 				printStatus();
 				if (this.timeout > 0 && seconds > this.timeout) {
-					logger.info("Timeout. Aborting processing.");
 					throw new TimeoutException();
 				}
 			}
