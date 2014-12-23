@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -74,6 +75,7 @@ public class Helper {
 	public static int UPDATE_INTERVAL_SEC = 10;
 	public static String LOGFILE_PATH = "C:\\wikidata\\logfiles";
 	public static String LOGGING_LEVEL = "INFO";
+	public static int LOGFILE_COUNT = 10;
 	public static String DUMPFILE_PATH = "C:\\wikidata";
 	public static int BLOCK_SIZE = 10000;
 	public static String DATABASE_PATH = "localhost";
@@ -109,7 +111,7 @@ public class Helper {
 		String year = "" + rightNow.get(Calendar.YEAR);
 		String month = "" + rightNow.get(Calendar.MONTH);
 		String date = "" + rightNow.get(Calendar.DATE);
-		String hour = "" + rightNow.get(Calendar.HOUR);
+		String hour = "" + rightNow.get(Calendar.HOUR_OF_DAY);
 		String minute = "" + rightNow.get(Calendar.MINUTE);
 		String second = "" + rightNow.get(Calendar.SECOND);
 
@@ -153,77 +155,91 @@ public class Helper {
 
 	/**
 	 * Reads configuration-file and writes values into static variables
+	 * 
+	 * @return Returns true if load was successful
 	 */
 	public static boolean loadConfiguration() {
+		try {
+			ConfigScanner parser = new ConfigScanner("./custom_properties");
+
+			try {
+				parser.processLineByLine();
+			} catch (IOException e) {
+				System.out
+						.println("Error while parsing custom_properties-file at "
+								+ parser.getFilePath().getAbsolutePath()
+								+ ". Abort!");
+				return false;
+			}
+		} catch (FileNotFoundException e) {
+			System.out
+					.println("Didn't find custom_properties-file expected at ./custom_properties. Abort!");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Changes DB-schema in which the programm will write.
+	 */
+	public static void changeSchemaInProgram() {
+		if (SCHEMA.equals("A")) {
+			SCHEMA = "B";
+		} else if (SCHEMA.equals("B")) {
+			SCHEMA = "A";
+		}
+	}
+
+	/**
+	 * Changes DB-schema in config file to provide the updated schema to the
+	 * user-application.
+	 */
+	public static void changeSchemaInConfig() {
 		File file = new File("./custom_properties");
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
 
 			String line;
-			String attribute;
-			String value;
+			String lineWOwhitespace;
+			String property;
+			String newtext = "";
+
 			try {
 				while ((line = br.readLine()) != null) {
 
-					if (!line.equals("") && !line.substring(0, 1).equals("#")) {
+					if (!line.equals("") && ! line.substring(0, 1).equals("#")) {
 
-						// Remove whitespaces
-						line = line.replaceAll(" ", "");
-						attribute = line.split("=")[0];
-						value = line.split("=")[1];
+							// Remove whitespaces
+							lineWOwhitespace = line.replaceAll(" ", "");
+							// Get property
+							property = lineWOwhitespace.split("=")[0];
 
-						switch (attribute) {
-						case "UPDATE_INTERVAL_SEC":
-							UPDATE_INTERVAL_SEC = Integer.parseInt(value);
-							break;
-						case "LOGFILE_PATH":
-							LOGFILE_PATH = value;
-							break;
-						case "LOGGING_LEVEL":
-							LOGGING_LEVEL = value;
-							break;
-						case "OFFLINE_MODE":
-							OFFLINE_MODE = Boolean.parseBoolean(value);
-							break;
-						case "TIMEOUT_SEC":
-							TIMEOUT_SEC = Integer.parseInt(value);
-							break;
-						case "DUMPFILE_PATH":
-							DUMPFILE_PATH = value;
-							break;
-						case "BLOCK_SIZE":
-							BLOCK_SIZE = Integer.parseInt(value);
-							break;
-						case "DATABASE_PATH":
-							DATABASE_PATH = value;
-							break;
-						case "DB_USERNAME":
-							DB_USERNAME = value;
-							break;
-						case "DB_PASSWORD":
-							DB_PASSWORD = value;
-							break;
-						case "SCHEMA":
-							SCHEMA = value;
-							break;
-						// TODO: When adding a new configuration attribute
-						}
+							if (property.equalsIgnoreCase("SCHEMA")) {
+								newtext += "SCHEMA = " + Helper.SCHEMA + "\n";
+							} else {
+								newtext += line + "\n";
+							}
+					} else {
+						newtext += line + "\n";
 					}
 				}
 				br.close();
-				return true;
+
+				// Write changed config to file
+				FileWriter writer = new FileWriter(file);
+				writer.write(newtext);
+				writer.close();
+
 			} catch (IOException e) {
 				System.out
 						.println("Error while parsing custom_properties-file at "
 								+ file.getAbsolutePath() + ". Abort!");
-				return false;
 			}
 		} catch (FileNotFoundException e) {
 			System.out
 					.println("Didn't find custom_properties-file expected at "
 							+ file.getAbsolutePath() + ". Abort!");
-			return false;
 		}
 	}
 
@@ -300,5 +316,19 @@ public class Helper {
 		entityTimerProcessor.stop(); // Hammer Time!
 
 		return true;
+	}
+	
+	public static void deleteOldLogfiles(){
+		File logfileFolder = new File(LOGFILE_PATH + "\\");
+		File[] logFiles;
+		
+		// Array is already sorted by date increasing (oldest comes first)
+		logFiles = logfileFolder.listFiles();
+		
+		for(int count = 0; count < (logFiles.length - Helper.LOGFILE_COUNT); count++){
+			
+			// Delete logfile
+			logFiles[count].delete();
+		}
 	}
 }
