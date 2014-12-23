@@ -24,6 +24,7 @@ public class Main {
 		// Initialize and configure logging for periodically println of status
 		Helper.configureLogging();
 
+		EntityTimerProcessor.logger.info("Using schema " + Helper.SCHEMA + ".");
 		EntityTimerProcessor.logger.info("Create statements to empty DB.");
 		
 		// Empty all non-static DB-Tables
@@ -48,7 +49,7 @@ public class Main {
 		
 		// If error occured, end program
 		if(!successful){
-			EntityTimerProcessor.logger.info("No success. End of program.");
+			EntityTimerProcessor.logger.info("End of program.");
 			return;
 		}
 
@@ -66,7 +67,7 @@ public class Main {
 			return;
 		}
 
-		EntityTimerProcessor.logger.info("End of program.");
+		EntityTimerProcessor.logger.info("Success! End of program.");
 		
 	}
 }

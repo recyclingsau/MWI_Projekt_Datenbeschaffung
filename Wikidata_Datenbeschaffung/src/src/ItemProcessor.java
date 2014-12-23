@@ -137,6 +137,26 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	 */
 	static final ItemIdValue jobFilterClass = Datamodel
 			.makeWikidataItemIdValue("Q28640");
+	
+	/**
+	 * Filter to check if item is a job
+	 */
+	static final ItemIdValue educationInstituteFilterClass = Datamodel
+			.makeWikidataItemIdValue("Q3918");
+	
+	/**
+	 * Filter to check if item is a city
+	 */
+	static final ItemIdValue cityFilterClass = Datamodel
+			.makeWikidataItemIdValue("Q515");
+	
+	/**
+	 * Filter to check if item is a state/county
+	 */
+	static final ItemIdValue stateFilterClass_1 = Datamodel
+			.makeWikidataItemIdValue("Q7275");
+	static final ItemIdValue stateFilterClass_2 = Datamodel
+			.makeWikidataItemIdValue("Q6256");
 
 	// TODO: Bei Einfügen neuer Items:
 	// static final ItemIdValue *item*FilterClass = Datamodel
@@ -198,6 +218,9 @@ public class ItemProcessor implements EntityDocumentProcessor {
 				 * searched Entity
 				 */
 				isJob = containsValue(statementGroup, jobFilterClass);
+				isCity = containsValue(statementGroup, cityFilterClass);
+				isState = containsValue(statementGroup, stateFilterClass_1) | containsValue(statementGroup, stateFilterClass_2);
+				isEducationInstitute = containsValue(statementGroup, educationInstituteFilterClass);
 				break;
 
 			/*

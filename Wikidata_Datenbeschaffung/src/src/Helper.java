@@ -79,6 +79,8 @@ public class Helper {
 	public static String DATABASE_PATH = "localhost";
 	public static String DB_USERNAME = "";
 	public static String DB_PASSWORD = "";
+	public static String SCHEMA = "A";
+	// TODO: When adding a new configuration attribute
 
 	/**
 	 * Collects all sites of the Wikimedia Foundation that can be linked in
@@ -122,18 +124,19 @@ public class Helper {
 		if (second.length() == 1)
 			second = "0" + second;
 
-		String timestamp = year + "_" + month + "_" + date + "-" + hour + "_" + minute + "_" + second;
+		String timestamp = year + "_" + month + "_" + date + "-" + hour + "_"
+				+ minute + "_" + second;
 
 		fileAppender.setFile(LOGFILE_PATH + "\\" + timestamp + ".txt");
 
 		String pattern;
 
 		// Define the pattern of log messages.
-		if (Helper.LOGGING_LEVEL.equalsIgnoreCase(Level.INFO.toString())) {
-			pattern = "%d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
+		if (Helper.LOGGING_LEVEL.equalsIgnoreCase(Level.DEBUG.toString())) {
+			pattern = "%c{1}:%L %d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
 		} else {
 			// Add name of class and line number
-			pattern = "%c{1}:%L %d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
+			pattern = "%d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n";
 		}
 		consoleAppender.setLayout(new PatternLayout(pattern));
 		fileAppender.setLayout(new PatternLayout(pattern));
@@ -151,7 +154,7 @@ public class Helper {
 	/**
 	 * Reads configuration-file and writes values into static variables
 	 */
-	public static void loadConfiguration() {
+	public static boolean loadConfiguration() {
 		File file = new File("./custom_properties");
 		BufferedReader br = null;
 		try {
@@ -163,7 +166,7 @@ public class Helper {
 			try {
 				while ((line = br.readLine()) != null) {
 
-					if (!line.equals("") && !line.substring(0, 2).equals("--")) {
+					if (!line.equals("") && !line.substring(0, 1).equals("#")) {
 
 						// Remove whitespaces
 						line = line.replaceAll(" ", "");
@@ -201,18 +204,26 @@ public class Helper {
 						case "DB_PASSWORD":
 							DB_PASSWORD = value;
 							break;
+						case "SCHEMA":
+							SCHEMA = value;
+							break;
+						// TODO: When adding a new configuration attribute
 						}
 					}
 				}
 				br.close();
+				return true;
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.out
+						.println("Error while parsing custom_properties-file at "
+								+ file.getAbsolutePath() + ". Abort!");
+				return false;
 			}
 		} catch (FileNotFoundException e) {
-			// TODO: Abbruch
 			System.out
-					.println("custom_properties-Datei nicht gefunden. Abbruch!");
-			e.printStackTrace();
+					.println("Didn't find custom_properties-file expected at "
+							+ file.getAbsolutePath() + ". Abort!");
+			return false;
 		}
 	}
 

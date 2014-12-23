@@ -75,10 +75,10 @@ public class EntityTimerProcessor implements EntityDocumentProcessor {
 	 * Stops the processing and prints the final time.
 	 */
 	public void stop() {
-		logger.info("Finished processing.");
 		this.timer.stop();
 		this.lastSeconds = (int) (timer.getTotalWallTime() / 1000000000);
 		printStatus();
+		logger.info("Finished processing.");
 	}
 
 	/**

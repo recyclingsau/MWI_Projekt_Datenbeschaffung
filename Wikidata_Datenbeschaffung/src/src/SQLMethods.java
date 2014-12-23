@@ -54,7 +54,7 @@ public class SQLMethods {
 
 		try {
 			con = DriverManager.getConnection("jdbc:mysql://"
-					+ Helper.DATABASE_PATH + "?user=" + Helper.DB_USERNAME
+					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user=" + Helper.DB_USERNAME
 					+ "&password=" + Helper.DB_PASSWORD);
 			con.setAutoCommit(false);
 			return con;
@@ -144,7 +144,7 @@ public class SQLMethods {
 				}
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO wikidata.GUI_TEXTS VALUES('"
+				String query = "INSERT INTO GUI_TEXTS VALUES('"
 						+ obj.id + "', '" + language + "', '" + label + "', '"
 						+ desc + "');";
 
@@ -168,7 +168,7 @@ public class SQLMethods {
 				String label = "";
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO wikidata.GUI_TEXTS VALUES('"
+				String query = "INSERT INTO GUI_TEXTS VALUES('"
 						+ obj.id + "', '" + language + "', '" + label + "', '"
 						+ description + "');";
 
@@ -192,36 +192,36 @@ public class SQLMethods {
 	public static void createItemDeletionStatements(String tableName) {
 
 		// Lock and empty alias-table
-//		String lock_alias = "LOCK TABLE wikidata." + tableName
+//		String lock_alias = "LOCK TABLE " + tableName
 //				+ "_alias WRITE;";
 //		queries.add(lock_alias);
-		String empty_alias = "DELETE FROM wikidata." + tableName + "_alias;";
+		String empty_alias = "DELETE FROM " + tableName + "_alias;";
 		queries.add(empty_alias);
 
 		// Lock and empty label-table
-//		String lock_label = "LOCK TABLE wikidata." + tableName
+//		String lock_label = "LOCK TABLE " + tableName
 //				+ "_label WRITE;";
 //		queries.add(lock_label);
-		String empty_label = "DELETE FROM wikidata." + tableName + "_label;";
+		String empty_label = "DELETE FROM " + tableName + "_label;";
 		queries.add(empty_label);
 
 		// Lock and empty descriptions-table
-//		String lock_desc = "LOCK TABLE wikidata." + tableName + "_desc WRITE;";
+//		String lock_desc = "LOCK TABLE " + tableName + "_desc WRITE;";
 //		queries.add(lock_desc);
-		String empty_desc = "DELETE FROM wikidata." + tableName + "_desc;";
+		String empty_desc = "DELETE FROM " + tableName + "_desc;";
 		queries.add(empty_desc);
 
 		// Lock and empty claim-table
-//		String lock_claim = "LOCK TABLE wikidata." + tableName
+//		String lock_claim = "LOCK TABLE " + tableName
 //				+ "_claim WRITE;";
 //		queries.add(lock_claim);
-		String empty_claim = "DELETE FROM wikidata." + tableName + "_claim;";
+		String empty_claim = "DELETE FROM " + tableName + "_claim;";
 		queries.add(empty_claim);
 
 		// Lock and empty link-table
-//		String lock_link = "LOCK TABLE wikidata." + tableName + "_link WRITE;";
+//		String lock_link = "LOCK TABLE " + tableName + "_link WRITE;";
 //		queries.add(lock_link);
-		String empty_link = "DELETE FROM wikidata." + tableName + "_link;";
+		String empty_link = "DELETE FROM " + tableName + "_link;";
 		queries.add(empty_link);
 
 	}
@@ -231,10 +231,10 @@ public class SQLMethods {
 	 */
 	public static void createOtherDeletionStatement(String tableName) {
 
-//		String lock = "LOCK TABLE wikidata." + tableName + " WRITE;";
+//		String lock = "LOCK TABLE " + tableName + " WRITE;";
 //		queries.add(lock);
 
-		String empty = "DELETE FROM wikidata." + tableName + ";";
+		String empty = "DELETE FROM " + tableName + ";";
 		queries.add(empty);
 	}
 
@@ -277,7 +277,7 @@ public class SQLMethods {
 			keyCounter.put(key, newIndex);
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO wikidata." + tableName
+			String query = "INSERT INTO " + tableName
 					+ "_claim values('" + i.id + "', '" + key + "', '"
 					+ newIndex + "', '" + value + "');";
 
@@ -327,7 +327,7 @@ public class SQLMethods {
 			value = value.replaceAll("\"", "`");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO wikidata." + tableName + "_"
+			String query = "INSERT INTO " + tableName + "_"
 					+ tableType + " VALUES('" + id + "', '" + key + "', '"
 					+ value + "');";
 
@@ -391,7 +391,7 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO wikidata." + tableName
+				String query = "INSERT INTO " + tableName
 						+ "_alias VALUES('" + id + "', '" + key + "', '"
 						+ newIndex + "', '" + value + "');";
 
@@ -445,7 +445,7 @@ public class SQLMethods {
 			url = url.replaceAll("\"", "%22");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO wikidata." + tableName
+			String query = "INSERT INTO " + tableName
 					+ "_link VALUES('" + id + "', '" + language + "', '"
 					+ group + "', '" + url + "');";
 

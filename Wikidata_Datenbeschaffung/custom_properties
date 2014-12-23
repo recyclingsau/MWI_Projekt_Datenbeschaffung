@@ -1,0 +1,20 @@
+# Logger
+UPDATE_INTERVAL_SEC = 10
+LOGFILE_PATH = C:\wikidata\logfiles
+LOGGING_LEVEL = ALL
+# Possible levels: ALL, ERROR, DEBUG, INFO, OFF, FATAL, TRACE, WARN
+
+# Testing
+OFFLINE_MODE = true
+TIMEOUT_SEC = 20
+
+# Processing
+DUMPFILE_PATH = C:\wikidata
+BLOCK_SIZE = 10000
+
+# Database
+DATABASE_PATH = localhost/wikidata
+SCHEMA = A
+DB_USERNAME = root
+DB_PASSWORD = hase
+
