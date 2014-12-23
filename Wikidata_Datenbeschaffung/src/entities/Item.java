@@ -14,13 +14,10 @@ import org.wikidata.wdtk.datamodel.interfaces.SiteLink;
  * @author Marco Kinkel
  * @version 0.1
  */
-public class Item {
+public class Item extends WikidataObject {
 
-	public String id;
 	public HashMap<String, String> claim;
 	public HashMap<String, List<MonolingualTextValue>> alias;
-	public HashMap<String, MonolingualTextValue> desc;
 	public HashMap<String, SiteLink> link;
-	public HashMap<String, MonolingualTextValue> label;
 	
 }

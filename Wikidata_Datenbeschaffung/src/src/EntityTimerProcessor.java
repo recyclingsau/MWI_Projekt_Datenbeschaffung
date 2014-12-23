@@ -92,7 +92,7 @@ public class EntityTimerProcessor implements EntityDocumentProcessor {
 		if (this.entityCount % 100 == 0) {
 			timer.stop();
 			int seconds = (int) (timer.getTotalWallTime() / 1000000000);
-			if (seconds >= this.lastSeconds + 10) {
+			if (seconds >= this.lastSeconds + Helper.UPDATE_INTERVAL_SEC) {
 				this.lastSeconds = seconds;
 				printStatus();
 				if (this.timeout > 0 && seconds > this.timeout) {

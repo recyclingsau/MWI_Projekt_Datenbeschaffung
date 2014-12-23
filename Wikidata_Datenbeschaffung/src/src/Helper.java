@@ -20,6 +20,10 @@ package src;
  * #L%
  */
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import org.apache.log4j.ConsoleAppender;
@@ -33,8 +37,7 @@ import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import src.EntityTimerProcessor.TimeoutException;
 
 /**
- * Hilfsklasse für statische Konfigurationsvariablen (TODO: In Datei
- * verschieben) und Logging-Methoden
+ * Hilfsklasse zum lesen statischer Konfigurationsvariablen und Logging-Methoden
  * 
  * Zum größten Teil der Beispielklasse org.wikidata.wdtk.examples.ExampleHelpers
  * des WikidataToolkits v0.3 von Markus Kroetsch entnommen
@@ -50,9 +53,9 @@ public class Helper {
 	 * If set to true, all example programs will run in offline mode. Only data
 	 * dumps that have been downloaded in previous runs will be used.
 	 * 
-	 * TODO: Zugriff für Administratoranwendung
+	 * Can be overwritten by custom_properties-file
 	 */
-	public static final boolean OFFLINE_MODE = true;
+	public static boolean OFFLINE_MODE = true;
 
 	/**
 	 * Timeout to abort processing after a short while or 0 to disable timeout.
@@ -62,9 +65,18 @@ public class Helper {
 	 * it allows for final processing and proper closing to happen without
 	 * having to wait for a whole dump file to process.
 	 * 
-	 * TODO: Zugriff für Administratoranwendung
+	 * Can be overwritten by custom_properties-file
 	 */
-	public static final int TIMEOUT_SEC = 100;
+	public static int TIMEOUT_SEC = 100;
+
+	public static int 		UPDATE_INTERVAL_SEC = 10;
+	public static String 	LOGFILE_PATH 		= "C:\\wikidata\\logfiles";
+	public static String 	LOGGING_LEVEL 		= "INFO";
+	public static String 	DUMPFILE_PATH 		= "C:\\wikidata";
+	public static int 		BLOCK_SIZE 			= 10000;
+	public static String 	DATABASE_PATH 		= "localhost";
+	public static String 	DB_USERNAME 		= "";
+	public static String 	DB_PASSWORD 		= "";
 
 	/**
 	 * Collects all sites of the Wikimedia Foundation that can be linked in
@@ -93,10 +105,77 @@ public class Helper {
 		consoleAppender.setLayout(new PatternLayout(pattern));
 
 		// Change to Level.ERROR for fewer messages:
-		consoleAppender.setThreshold(Level.INFO);
+		consoleAppender.setThreshold(Level.toLevel(Helper.LOGGING_LEVEL));
 
 		consoleAppender.activateOptions();
 		Logger.getRootLogger().addAppender(consoleAppender);
+	}
+
+	/**
+	 * Reads configuration-file and writes values into static variables
+	 */
+	public static void loadConfiguration() {
+		File file = new File("./custom_properties");
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(file));
+
+			String line;
+			String attribute;
+			String value;
+			try {
+				while ((line = br.readLine()) != null) {
+
+					if( ! line.equals("") && ! line.substring(0, 2).equals("--")){
+						
+						// Remove whitespaces
+						line = line.replaceAll(" ", "");
+						attribute = line.split("=")[0];
+						value = line.split("=")[1];
+						
+						switch(attribute){
+						case "UPDATE_INTERVAL_SEC":
+							UPDATE_INTERVAL_SEC = Integer.parseInt(value);
+							break;
+						case "LOGFILE_PATH":
+							LOGFILE_PATH = value;
+							break;
+						case "LOGGING_LEVEL":
+							LOGGING_LEVEL = value;
+							break;
+						case "OFFLINE_MODE":
+							OFFLINE_MODE = Boolean.parseBoolean(value);
+							break;
+						case "TIMEOUT_SEC":
+							TIMEOUT_SEC = Integer.parseInt(value);
+							break;
+						case "DUMPFILE_PATH":
+							DUMPFILE_PATH = value;
+							break;
+						case "BLOCK_SIZE":
+							BLOCK_SIZE = Integer.parseInt(value);
+							break;
+						case "DATABASE_PATH":
+							DATABASE_PATH = value;
+							break;
+						case "DB_USERNAME":
+							DB_USERNAME = value;
+							break;
+						case "DB_PASSWORD":
+							DB_PASSWORD = value;
+							break;
+						}
+					}
+				}
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO: Abbruch und Ausgabe durch Logger ablösen
+			System.out.println("custom_properties-Datei nicht gefunden. Abbruch!");
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -121,11 +200,10 @@ public class Helper {
 		// Define directory for the dumps
 		// If not exists, a directory "dumpfiles" will be created
 		// Standard is user.dir
-		// TODO: Als Einstellung für Administrator freischalten
 		try {
-//			dumpProcessingController.setDownloadDirectory(System
-//					.getProperty("user.dir"));
-			dumpProcessingController.setDownloadDirectory("C:\\wikidata\\");
+			// dumpProcessingController.setDownloadDirectory(System
+			// .getProperty("user.dir"));
+			dumpProcessingController.setDownloadDirectory(DUMPFILE_PATH);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Kein Zugriff auf Dumpfiles möglich!");

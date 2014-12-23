@@ -17,16 +17,24 @@ public class Main {
 	 * @author Marco Kinkel
 	 */
 	public static void main(String[] args) {
-
+		
+		// Read properties from config-file
+		Helper.loadConfiguration();
+		
 		// Initialize and configure logging for periodically println of status
 		Helper.configureLogging();
 
 		System.out.println("Lösche Datenbank...");
 
-		// Completely deletion of database
-		SQLMethods.createPropertyDeletionStatements();
+		// Empty all non-static DB-Tables
 		SQLMethods.createItemDeletionStatements("PERSONS");
 		SQLMethods.createItemDeletionStatements("JOBS");
+		SQLMethods.createItemDeletionStatements("EDUCATIONINSTITUTES");
+		SQLMethods.createItemDeletionStatements("CITIES");
+		SQLMethods.createItemDeletionStatements("STATES");
+		SQLMethods.createItemDeletionStatements("JOBS");
+		SQLMethods.createGuiTextsDeletionStatement();
+		SQLMethods.createLanguagesDeletionStatement();
 
 		// TODO: When adding new tables - Call deletion-method!
 

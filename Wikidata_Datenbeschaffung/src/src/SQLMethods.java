@@ -15,7 +15,7 @@ import org.wikidata.wdtk.datamodel.interfaces.MonolingualTextValue;
 import org.wikidata.wdtk.datamodel.interfaces.SiteLink;
 
 import entities.Item;
-import entities.Property;
+import entities.WikidataObject;
 
 /**
  * Class containing all methods to communicate with MySQL-Database
@@ -34,13 +34,11 @@ public class SQLMethods {
 	/**
 	 * Opens connection to database using {@link com.mysql.jdbc.Driver}
 	 * 
-	 * @return Connection to work with. AutoCommit is FALSE!
+	 * @return Connection to work with. Returns null, if no connection possible. AutoCommit is FALSE!
 	 * 
-	 *         TODO: Benutzername und Passwort stehen hier im Klartext. Sollte
-	 *         auch von Administrator verwaltet werden können. Außerdem muss
-	 *         sichergestellt werden, dass eine Verbindung zur DB besteht, bevor
-	 *         die Dumps verarbeitet werden. Falls nicht, muss das ganze
-	 *         Programm abbrechen!
+	 *         TODO: Es muss sichergestellt werden, dass eine Verbindung zur DB
+	 *         besteht, bevor die Dumps verarbeitet werden. Falls nicht, muss
+	 *         das ganze Programm abbrechen!
 	 */
 	protected static Connection openSQLconnection() {
 
@@ -55,7 +53,7 @@ public class SQLMethods {
 
 		try {
 			con = DriverManager
-					.getConnection("jdbc:mysql://localhost?user=root&password=hase");
+					.getConnection("jdbc:mysql://" + Helper.DATABASE_PATH + "?user=" + Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
 			con.setAutoCommit(false);
 			return con;
 		} catch (SQLException e) {
@@ -96,26 +94,26 @@ public class SQLMethods {
 	}
 
 	/**
-	 * Creates and stores SQL statements for {@link entities.Property}.
+	 * Creates and stores SQL statements for {@link entities.WikidataObject}.
 	 * Statements get executed in {@link SQLMethods#executeQueries()}.
 	 * 
-	 * @param propertyList
-	 *            List of properties to be converted into SQL statements
+	 * @param wikidataObjectList
+	 *            List of gui-texts to be converted into SQL statements
 	 */
-	public static void createPropertiesStatements(
-			ArrayList<Property> propertyList) {
+	public static void createWikidataObjectStatements(
+			ArrayList<WikidataObject> wikidataObjectList) {
 
-		for (Property p : propertyList) {
+		for (WikidataObject obj : wikidataObjectList) {
 
 			// Remove all entries in gotic language because this character set
 			// is not included in UTF-8
-			p.label.remove("got");
+			obj.label.remove("got");
 
 			// Iterate over every language
-			for (String language : p.label.keySet()) {
+			for (String language : obj.label.keySet()) {
 
-				// Read label of property in actual language
-				String label = p.label.get(language).getText();
+				// Read label of gui-text in actual language
+				String label = obj.label.get(language).getText();
 
 				// Prevent SQL injection
 				label = label.replaceAll("'", "`");
@@ -132,7 +130,7 @@ public class SQLMethods {
 					// If a description for this language was found, delete this
 					// description after reading it.
 					// So we don't create duplicate entries in the next loop.
-					desc = p.desc.remove(language).getText();
+					desc = obj.desc.remove(language).getText();
 
 					// Prevent SQL injection
 					desc = desc.replaceAll("'", "`");
@@ -144,9 +142,9 @@ public class SQLMethods {
 				}
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO wikidata.properties VALUES('"
-						+ p.id + "', '" + language + "', '" + label + "', '"
-						+ desc + "')";
+				String query = "INSERT INTO wikidata.GUI_TEXTS VALUES('"
+						+ obj.id + "', '" + language + "', '" + label + "', '"
+						+ desc + "');";
 
 				// Store SQL query
 				queries.add(query);
@@ -157,9 +155,9 @@ public class SQLMethods {
 			// the remaining languages for descriptions. These automatically
 			// don't have a label because they weren't deleted in the loop
 			// before.
-			for (String language : p.desc.keySet()) {
+			for (String language : obj.desc.keySet()) {
 
-				String description = p.desc.get(language).getText();
+				String description = obj.desc.get(language).getText();
 
 				// Prevent SQL injection
 				description = description.replaceAll("'", "`");
@@ -168,9 +166,9 @@ public class SQLMethods {
 				String label = "";
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO wikidata.properties VALUES('"
-						+ p.id + "', '" + language + "', '" + label + "', '"
-						+ description + "')";
+				String query = "INSERT INTO wikidata.GUI_TEXTS VALUES('"
+						+ obj.id + "', '" + language + "', '" + label + "', '"
+						+ description + "');";
 
 				// Store SQL query
 				queries.add(query);
@@ -192,33 +190,42 @@ public class SQLMethods {
 	public static void createItemDeletionStatements(String tableName) {
 
 		// SQL to empty alias-table
-		String query_alias = "DELETE FROM wikidata." + tableName + "_alias";
+		String query_alias = "DELETE FROM wikidata." + tableName + "_alias;";
 		queries.add(query_alias);
 
 		// SQL to empty label-table
-		String query_label = "DELETE FROM wikidata." + tableName + "_label";
+		String query_label = "DELETE FROM wikidata." + tableName + "_label;";
 		queries.add(query_label);
 
 		// SQL to empty descriptions-table
-		String query_desc = "DELETE FROM wikidata." + tableName + "_desc";
+		String query_desc = "DELETE FROM wikidata." + tableName + "_desc;";
 		queries.add(query_desc);
 
 		// SQL to empty claims-table
-		String query_claim = "DELETE FROM wikidata." + tableName + "_claim";
+		String query_claim = "DELETE FROM wikidata." + tableName + "_claim;";
 		queries.add(query_claim);
 
 		// SQL to empty link-table
-		String query_link = "DELETE FROM wikidata." + tableName + "_link";
+		String query_link = "DELETE FROM wikidata." + tableName + "_link;";
 		queries.add(query_link);
 
 	}
 
 	/**
-	 * Create and store SQL statements to empty property-table
+	 * Create and store SQL statements to empty GUI-text-table
 	 */
-	public static void createPropertyDeletionStatements() {
+	public static void createGuiTextsDeletionStatement() {
 
-		String query = "DELETE FROM wikidata.properties";
+		String query = "DELETE FROM wikidata.GUI_TEXTS;";
+		queries.add(query);
+	}
+
+	/**
+	 * Create and store SQL statements to empty languages-table
+	 */
+	public static void createLanguagesDeletionStatement() {
+
+		String query = "DELETE FROM wikidata.languages;";
 		queries.add(query);
 	}
 
@@ -263,7 +270,7 @@ public class SQLMethods {
 			// Create SQL query dynamically
 			String query = "INSERT INTO wikidata." + tableName
 					+ "_claim values('" + i.id + "', '" + key + "', '"
-					+ newIndex + "', '" + value + "')";
+					+ newIndex + "', '" + value + "');";
 
 			// Store SQL query
 			queries.add(query);
@@ -313,7 +320,7 @@ public class SQLMethods {
 			// Create SQL query dynamically
 			String query = "INSERT INTO wikidata." + tableName + "_"
 					+ tableType + " VALUES('" + id + "', '" + key + "', '"
-					+ value + "')";
+					+ value + "');";
 
 			// Store SQL query
 			queries.add(query);
@@ -363,7 +370,7 @@ public class SQLMethods {
 
 				// Prevent SQL injection
 				value = value.replaceAll("'", "`");
-				value = value.replaceAll("\"", "`");
+				value = value.replaceAll("\"", "``");
 
 				// Try to get index value of current language key
 				if (keyCounter.get(key) != null) {
@@ -377,7 +384,7 @@ public class SQLMethods {
 				// Create SQL query dynamically
 				String query = "INSERT INTO wikidata." + tableName
 						+ "_alias VALUES('" + id + "', '" + key + "', '"
-						+ newIndex + "', '" + value + "')";
+						+ newIndex + "', '" + value + "');";
 
 				// Store SQL
 				queries.add(query);
@@ -431,7 +438,7 @@ public class SQLMethods {
 			// Create SQL query dynamically
 			String query = "INSERT INTO wikidata." + tableName
 					+ "_link VALUES('" + id + "', '" + language + "', '"
-					+ group + "', '" + url + "')";
+					+ group + "', '" + url + "');";
 
 			// Store SQL
 			queries.add(query);

@@ -34,12 +34,13 @@ import org.wikidata.wdtk.datamodel.interfaces.PropertyDocument;
 import org.wikidata.wdtk.datamodel.interfaces.SiteLink;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
+import org.wikidata.wdtk.datamodel.interfaces.TermedDocument;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 import org.wikidata.wdtk.datamodel.interfaces.ValueSnak;
 import org.wikidata.wdtk.datamodel.json.jackson.JacksonValueSnak;
 
 import entities.Item;
-import entities.Property;
+import entities.WikidataObject;
 
 /**
  * Implementation of a
@@ -93,7 +94,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	 * Collects all found Properties as instances of
 	 * {@link org.wikidata.wdtk.datamodel.interfaces.PropertyDocument}.
 	 */
-	public ArrayList<PropertyDocument> properties = new ArrayList<PropertyDocument>();
+	public ArrayList<TermedDocument> guiElements = new ArrayList<TermedDocument>();
 
 	// TODO: Bei Einfügen neuer Items:
 	// public ArrayList<ItemDocument> *item* = new ArrayList<ItemDocument>();
@@ -132,6 +133,22 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		boolean isHuman = false;
 		boolean hasAlmaMater = false;
 		boolean isJob = false;
+
+		// Read ID of entity and check, if it's needed in the gui texts. Add it
+		// to the List then.
+		String itemID = itemDocument.getEntityId().getId();
+
+		switch (itemID) {
+		case "Q515": // City
+		case "Q215627": // Person
+		case "Q82799": // Name
+		case "Q2385804": // Educational institution
+		case "Q508719": // Alumni
+		case "Q319608": // Address
+			// TODO: Bei Einfügen neuer GUI-Texte mit Q-ID
+
+			guiElements.add(itemDocument);
+		}
 
 		// TODO: Bei Einfügen neuer Items:
 		// boolean is*Item* = false;
@@ -189,7 +206,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		 */
 
 		// Print status every 100.000 processed items
-		// TODO: Anzahl von Administrator einstellen lassen
+		// TODO: Von Logger ablösen
 		if (this.itemCount % 100000 == 0) {
 			printStatus();
 		}
@@ -203,13 +220,12 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		 * wie geplant. Läuft bei 3GB Heap trotzdem voll!
 		 */
 
-		if (persons.size() >= 10000) { // TODO: Größe der Blöcke von
-										// Administrator einstellen lassen
+		if (persons.size() >= Helper.BLOCK_SIZE) {
 
 			// Status message
 			// TODO: In Logger implementieren
 			System.out
-					.println("10000 Personen erreicht. Erstelle SQL-Befehle!");
+					.println("" + Helper.BLOCK_SIZE + " 10000 Personen erreicht. Erstelle SQL-Befehle!");
 
 			// Convert objects in this.jobs-List to Instances of
 			// entities.Item for easier handling.
@@ -229,12 +245,11 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			System.out.println("Erstellung der SQL-Befehle abgeschlossen!");
 		}
 
-		if (jobs.size() >= 10000) { // TODO: Größe der Blöcke von Administrator
-									// einstellen lassen
+		if (jobs.size() >= Helper.BLOCK_SIZE) { 
 
 			// Status message
 			// TODO: In Logger implementieren
-			System.out.println("10000 Jobs erreicht. Erstelle SQL-Befehle!");
+			System.out.println("" + Helper.BLOCK_SIZE + " 10000 Jobs erreicht. Erstelle SQL-Befehle!");
 
 			// Convert objects in this.jobs-List to Instances of
 			// entities.Item for easier handling.
@@ -253,9 +268,9 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		// TODO: Bei Einfügen neuer Items:
 		/*
 		 * 
-		 * System.out.println("10000 Jobs erreicht. Erstelle SQL-Befehle!");
+		 * System.out.println("" + Helper.BLOCK_SIZE + " Jobs erreicht. Erstelle SQL-Befehle!");
 		 * 
-		 * if (*itemsList*.size() >= 10000) {
+		 * if (*itemsList*.size() >= Helper.BLOCK_SIZE) {
 		 * 
 		 * System.out.println("10000 *Items* erreicht. Schreibe in Datenbank!");
 		 * 
@@ -267,8 +282,9 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	}
 
 	/**
-	 * Processes items from wikidata dump. Filters them by their properties and
-	 * writes them into the static lists of this class. Called indirecly in
+	 * Processes properties from wikidata dump. Adds them to
+	 * {@link ItemProcessor#guiElements} if they are needed in the GUI. Called
+	 * in
 	 * {@link Helper#processEntitiesFromWikidataDump(EntityDocumentProcessor)}.
 	 * 
 	 * @param propertyDocument
@@ -281,11 +297,19 @@ public class ItemProcessor implements EntityDocumentProcessor {
 
 		this.propertyCount++;
 
-		properties.add(propertyDocument);
+		// Read ID of property and check, if it's needed in the gui texts. Add
+		// it to the List then.
+		String propertyId = propertyDocument.getEntityId().getId();
+		switch (propertyId) {
+		case "P17": // State
+		case "P106": // Job
+		case "P571": // Year of foundation
+		case "P1329": // Phone
+		case "P968": // E-Mail
+			// TODO: Bei Einfügen neuer GUI-Texte mit P-ID
 
-		propertyDocument.getEntityId().getId();
-		propertyDocument.getLabels();
-		propertyDocument.getDescriptions();
+			guiElements.add(propertyDocument);
+		}
 
 	}
 
@@ -371,43 +395,43 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	}
 
 	/**
-	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.PropertyDocument}s
-	 * to {@link entities.Property}s, creates and stores SQL-statements to write
+	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.gui-textDocument}s
+	 * to {@link entities.WikidataObject}s, creates and stores SQL-statements to write
 	 * them into the DB later on.
 	 * 
-	 * @param propertyDocuments
-	 *            List of propertyDocuments to be converted
+	 * @param termedDocuments
+	 *            List of gui-textDocuments to be converted
 	 * 
 	 * @author Marco Kinkel
 	 */
-	protected void convertPropertiesAndCreateSQL(
-			ArrayList<PropertyDocument> propertyDocuments) {
+	protected void convertGuiElementsAndCreateSQL(
+			ArrayList<TermedDocument> termedDocuments) {
 
-		Property p = null;
+		WikidataObject obj = null;
 
-		// Collection to store the converted Property-Objects
-		ArrayList<Property> propertyCollection = new ArrayList<Property>();
+		// Collection to store the converted gui-text-Objects
+		ArrayList<WikidataObject> wikidataObjectCollection = new ArrayList<WikidataObject>();
 
-		// Iterate over all propertyDocuments
-		while (propertyDocuments.size() != 0) {
+		// Iterate over all gui-textDocuments
+		while (termedDocuments.size() != 0) {
 
 			// Free memory at every step
-			PropertyDocument propertyDoc = propertyDocuments.remove(0);
+			TermedDocument termedDoc = termedDocuments.remove(0);
 
-			// Convert PropertyDocument to Property
-			p = convertToProperty(propertyDoc);
+			// Convert gui-textDocument to gui-text
+			obj = convertToWikidataObject(termedDoc);
 
-			// Add Property to Collection which will be given to the SQL
+			// Add gui-text to Collection which will be given to the SQL
 			// creation
 			// method after the loop
-			propertyCollection.add(p);
+			wikidataObjectCollection.add(obj);
 
 		}
 
 		// Create and store SQL statements to store the converted properties in
 		// the
 		// DB later on
-		SQLMethods.createPropertiesStatements(propertyCollection);
+		SQLMethods.createWikidataObjectStatements(wikidataObjectCollection);
 
 	}
 
@@ -427,7 +451,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		 * convertItemsAndCreateSQL(*item-List*, *ITEMS (Tabellenname)*);
 		 */
 
-		convertPropertiesAndCreateSQL(properties);
+		convertGuiElementsAndCreateSQL(guiElements);
 	}
 
 	/**
@@ -499,22 +523,24 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	}
 
 	/**
-	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.PropertyDocument} to {@link entities.Property}.
-	 *  
-	 * @param propertyDoc The PropertyDocument to be converted
+	 * Converts {@link org.wikidata.wdtk.datamodel.interfaces.TermedDocument}
+	 * to {@link entities.WikidataObject}.
+	 * 
+	 * @param termedDoc
+	 *            The PropertyDocument to be converted
 	 * @return Converted Property-Object
 	 * 
 	 * @author Marco Kinkel
 	 */
-	private Property convertToProperty(PropertyDocument propertyDoc) {
+	private WikidataObject convertToWikidataObject(TermedDocument termedDoc) {
 
-		Property p = new Property();
+		WikidataObject p = new WikidataObject();
 
-		p.id = propertyDoc.getEntityId().getId();
+		p.id = termedDoc.getEntityId().getId();
 		p.label = new HashMap<String, MonolingualTextValue>(
-				propertyDoc.getLabels());
+				termedDoc.getLabels());
 		p.desc = new HashMap<String, MonolingualTextValue>(
-				propertyDoc.getDescriptions());
+				termedDoc.getDescriptions());
 
 		return p;
 	}
