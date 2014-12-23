@@ -26,6 +26,7 @@ public class Main {
 		Helper.configureLogging();
 		
 		// Delete old logfiles
+		EntityTimerProcessor.logger.info("Deleting old logfiles.");
 		Helper.deleteOldLogfiles();
 
 		// Change schema which will be updated now
@@ -62,6 +63,7 @@ public class Main {
 					+ " education institutes,\n" + processor.citiesCount
 					+ " cities,\n" + processor.statesCount + " states,\n"
 					+ "...found in " + processor.itemCount + " items.");
+			// TODO: When adding new Items
 		} else {
 			EntityTimerProcessor.logger.info("End of program.");
 			return;

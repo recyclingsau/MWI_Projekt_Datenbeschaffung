@@ -471,6 +471,9 @@ public class ItemProcessor implements EntityDocumentProcessor {
 
 		convertItemsAndCreateSQL(persons, "PERSONS");
 		convertItemsAndCreateSQL(jobs, "JOBS");
+		convertItemsAndCreateSQL(educationInstitutes, "EDUCATIONINSTITUTES");
+		convertItemsAndCreateSQL(cities, "CITIES");
+		convertItemsAndCreateSQL(states, "STATES");
 		// TODO: Bei neuem Item:
 		/*
 		 * convertItemsAndCreateSQL(*item-List*, *ITEMS (Tabellenname)*);
