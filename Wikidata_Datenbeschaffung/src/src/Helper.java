@@ -109,7 +109,7 @@ public class Helper {
 		Calendar rightNow = Calendar.getInstance();
 
 		String year = "" + rightNow.get(Calendar.YEAR);
-		String month = "" + rightNow.get(Calendar.MONTH);
+		String month = "" + (rightNow.get(Calendar.MONTH) + 1);
 		String date = "" + rightNow.get(Calendar.DATE);
 		String hour = "" + rightNow.get(Calendar.HOUR_OF_DAY);
 		String minute = "" + rightNow.get(Calendar.MINUTE);
@@ -158,22 +158,22 @@ public class Helper {
 	 * 
 	 * @return Returns true if load was successful
 	 */
-	public static boolean loadConfiguration() {
+	public static boolean loadConfiguration(String path) {
 		try {
-			ConfigScanner parser = new ConfigScanner("./custom_properties");
+			ConfigScanner parser = new ConfigScanner(path);
 
 			try {
 				parser.processLineByLine();
 			} catch (IOException e) {
 				System.out
-						.println("Error while parsing custom_properties-file at "
+						.println("Error while parsing config-file at "
 								+ parser.getFilePath().getAbsolutePath()
 								+ ". Abort!");
 				return false;
 			}
 		} catch (FileNotFoundException e) {
 			System.out
-					.println("Didn't find custom_properties-file expected at ./custom_properties. Abort!");
+					.println("Didn't find config-file expected at " + path + " . Abort!");
 			return false;
 		}
 		return true;
@@ -306,6 +306,7 @@ public class Helper {
 		try {
 			// Start processing (may trigger downloads where needed)
 			dumpProcessingController.processMostRecentJsonDump();
+//			dumpProcessingController.processAllRecentRevisionDumps();
 		} catch (TimeoutException e) {
 			EntityTimerProcessor.logger.info("Reached timer of " + TIMEOUT_SEC
 					+ " seconds.");

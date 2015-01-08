@@ -42,9 +42,9 @@ import org.wikidata.wdtk.util.Timer;
  */
 public class EntityTimerProcessor implements EntityDocumentProcessor {
 
-	static final Logger logger = LoggerFactory
+	public static final Logger logger = LoggerFactory
 			.getLogger(EntityTimerProcessor.class);
-	
+
 	final Timer timer = Timer.getNamedTimer("EntityTimerProcessor");
 	final int timeout;
 	int entityCount = 0;
@@ -58,7 +58,7 @@ public class EntityTimerProcessor implements EntityDocumentProcessor {
 	 */
 	public EntityTimerProcessor(int timeout) {
 		this.timeout = timeout;
-		
+
 	}
 
 	@Override
@@ -109,9 +109,11 @@ public class EntityTimerProcessor implements EntityDocumentProcessor {
 	 * Prints the current status, time and entity count.
 	 */
 	private void printStatus() {
-		logger.info("Processed " + this.entityCount + " entities in "
-				+ this.lastSeconds + " sec ("
-				+ (this.entityCount / this.lastSeconds) + " per second)");
+		if (this.lastSeconds != 0) {
+			logger.info("Processed " + this.entityCount + " entities in "
+					+ this.lastSeconds + " sec ("
+					+ (this.entityCount / this.lastSeconds) + " per second)");
+		}
 	}
 
 	private void startTimer() {

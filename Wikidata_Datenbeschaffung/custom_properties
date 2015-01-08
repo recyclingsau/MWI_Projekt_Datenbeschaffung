@@ -3,27 +3,21 @@
 # -----------
 UPDATE_INTERVAL_SEC = 10
 LOGFILE_PATH = C:\wikidata\logfiles
-LOGGING_LEVEL = ALL
+
 # Possible levels: ALL, ERROR, DEBUG, INFO, OFF, FATAL, TRACE, WARN
+LOGGING_LEVEL = ALL
+
+# Anzahl der Logfiles, die aufgehoben werden
 LOGFILE_COUNT = 10
 
 # -----------
 # Testing
 # -----------
 OFFLINE_MODE = true
-TIMEOUT_SEC = 20
+TIMEOUT_SEC = 100
 
 # -----------
 # Processing
 # -----------
 DUMPFILE_PATH = C:\wikidata
 BLOCK_SIZE = 10000
-
-# -----------
-# Database
-# -----------
-DATABASE_PATH = localhost/wikidata
-# this is the schema used by the user-application. Data updates go into the other schema
-SCHEMA = B
-DB_USERNAME = root
-DB_PASSWORD = hase

@@ -51,7 +51,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	@Override
 	public String visit(GlobeCoordinatesValue value) {
 		// TODO Auto-generated method stub
-		return value.toString();
+		// 49°59`48``N, 8°38`0``E
+		return "" + value.getLatitude() + ", " + value.getLongitude();
 	}
 
 	/**

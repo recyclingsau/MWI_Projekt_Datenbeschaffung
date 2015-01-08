@@ -46,7 +46,8 @@ public class SQLMethods {
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} catch (Exception e) {
-			System.err.println("Keine Treiber-Klasse!");
+			EntityTimerProcessor.logger
+					.error("No driver-class found for DB-Connection. Abort!");
 			return null;
 		}
 
@@ -54,12 +55,13 @@ public class SQLMethods {
 
 		try {
 			con = DriverManager.getConnection("jdbc:mysql://"
-					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user=" + Helper.DB_USERNAME
-					+ "&password=" + Helper.DB_PASSWORD);
+					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user="
+					+ Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
 			con.setAutoCommit(false);
 			return con;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			EntityTimerProcessor.logger
+					.error("Connection to DB failed. Abort!");
 			return null;
 		}
 	}
@@ -144,9 +146,9 @@ public class SQLMethods {
 				}
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO GUI_TEXTS VALUES('"
-						+ obj.id + "', '" + language + "', '" + label + "', '"
-						+ desc + "');";
+				String query = "INSERT INTO GUI_TEXTS VALUES('" + obj.id
+						+ "', '" + language + "', '" + label + "', '" + desc
+						+ "');";
 
 				// Store SQL query
 				queries.add(query);
@@ -168,8 +170,8 @@ public class SQLMethods {
 				String label = "";
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO GUI_TEXTS VALUES('"
-						+ obj.id + "', '" + language + "', '" + label + "', '"
+				String query = "INSERT INTO GUI_TEXTS VALUES('" + obj.id
+						+ "', '" + language + "', '" + label + "', '"
 						+ description + "');";
 
 				// Store SQL query
@@ -192,35 +194,35 @@ public class SQLMethods {
 	public static void createItemDeletionStatements(String tableName) {
 
 		// Lock and empty alias-table
-//		String lock_alias = "LOCK TABLE " + tableName
-//				+ "_alias WRITE;";
-//		queries.add(lock_alias);
+		// String lock_alias = "LOCK TABLE " + tableName
+		// + "_alias WRITE;";
+		// queries.add(lock_alias);
 		String empty_alias = "DELETE FROM " + tableName + "_alias;";
 		queries.add(empty_alias);
 
 		// Lock and empty label-table
-//		String lock_label = "LOCK TABLE " + tableName
-//				+ "_label WRITE;";
-//		queries.add(lock_label);
+		// String lock_label = "LOCK TABLE " + tableName
+		// + "_label WRITE;";
+		// queries.add(lock_label);
 		String empty_label = "DELETE FROM " + tableName + "_label;";
 		queries.add(empty_label);
 
 		// Lock and empty descriptions-table
-//		String lock_desc = "LOCK TABLE " + tableName + "_desc WRITE;";
-//		queries.add(lock_desc);
+		// String lock_desc = "LOCK TABLE " + tableName + "_desc WRITE;";
+		// queries.add(lock_desc);
 		String empty_desc = "DELETE FROM " + tableName + "_desc;";
 		queries.add(empty_desc);
 
 		// Lock and empty claim-table
-//		String lock_claim = "LOCK TABLE " + tableName
-//				+ "_claim WRITE;";
-//		queries.add(lock_claim);
+		// String lock_claim = "LOCK TABLE " + tableName
+		// + "_claim WRITE;";
+		// queries.add(lock_claim);
 		String empty_claim = "DELETE FROM " + tableName + "_claim;";
 		queries.add(empty_claim);
 
 		// Lock and empty link-table
-//		String lock_link = "LOCK TABLE " + tableName + "_link WRITE;";
-//		queries.add(lock_link);
+		// String lock_link = "LOCK TABLE " + tableName + "_link WRITE;";
+		// queries.add(lock_link);
 		String empty_link = "DELETE FROM " + tableName + "_link;";
 		queries.add(empty_link);
 
@@ -231,8 +233,8 @@ public class SQLMethods {
 	 */
 	public static void createOtherDeletionStatement(String tableName) {
 
-//		String lock = "LOCK TABLE " + tableName + " WRITE;";
-//		queries.add(lock);
+		// String lock = "LOCK TABLE " + tableName + " WRITE;";
+		// queries.add(lock);
 
 		String empty = "DELETE FROM " + tableName + ";";
 		queries.add(empty);
@@ -253,37 +255,41 @@ public class SQLMethods {
 		HashMap<String, Integer> keyCounter = new HashMap<String, Integer>();
 
 		// Iterate over claims
-		for (Entry<String, String> entry : i.claim.entrySet()) {
+		for (Entry<String, List<String>> entry : i.claim.entrySet()) {
 			String key = entry.getKey();
-			String value = entry.getValue();
+			Iterator<String> iter = entry.getValue().iterator();
+			while (iter.hasNext()) {
 
-			// Prevent SQL injection
-			if (value != null) {
-				value = value.replaceAll("'", "`");
-				value = value.replaceAll("\"", "`");
+				// Get value
+				String value = iter.next();
+
+				// Prevent SQL injection
+				if (value != null) {
+					value = value.replaceAll("'", "`");
+					value = value.replaceAll("\"", "`");
+				}
+
+				// Get initial index for help key. We need this one in our DB
+				// because item_id and property_id are no unique key
+				int newIndex = 0;
+
+				// Try to get index value of current property key
+				if (keyCounter.get(key) != null) {
+					// Add 1 to index value
+					newIndex = keyCounter.get(key) + 1;
+				}
+
+				// Put new index value to keyCounter
+				keyCounter.put(key, newIndex);
+
+				// Create SQL query dynamically
+				String query = "INSERT INTO " + tableName + "_claim values('"
+						+ i.id + "', '" + key + "', '" + newIndex + "', '"
+						+ value + "');";
+
+				// Store SQL query
+				queries.add(query);
 			}
-
-			// Get initial index for help key. We need this one in out DB
-			// because item_id and property_id are no unique key
-			int newIndex = 0;
-
-			// Try to get index value of current property key
-			if (keyCounter.get(key) != null) {
-				// Add 1 to index value
-				newIndex = keyCounter.get(key) + 1;
-			}
-
-			// Put new index value to keyCounter
-			keyCounter.put(key, newIndex);
-
-			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName
-					+ "_claim values('" + i.id + "', '" + key + "', '"
-					+ newIndex + "', '" + value + "');";
-
-			// Store SQL query
-			queries.add(query);
-
 		}
 	}
 
@@ -327,9 +333,8 @@ public class SQLMethods {
 			value = value.replaceAll("\"", "`");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName + "_"
-					+ tableType + " VALUES('" + id + "', '" + key + "', '"
-					+ value + "');";
+			String query = "INSERT INTO " + tableName + "_" + tableType
+					+ " VALUES('" + id + "', '" + key + "', '" + value + "');";
 
 			// Store SQL query
 			queries.add(query);
@@ -391,9 +396,9 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName
-						+ "_alias VALUES('" + id + "', '" + key + "', '"
-						+ newIndex + "', '" + value + "');";
+				String query = "INSERT INTO " + tableName + "_alias VALUES('"
+						+ id + "', '" + key + "', '" + newIndex + "', '"
+						+ value + "');";
 
 				// Store SQL
 				queries.add(query);
@@ -445,9 +450,8 @@ public class SQLMethods {
 			url = url.replaceAll("\"", "%22");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName
-					+ "_link VALUES('" + id + "', '" + language + "', '"
-					+ group + "', '" + url + "');";
+			String query = "INSERT INTO " + tableName + "_link VALUES('" + id
+					+ "', '" + language + "', '" + group + "', '" + url + "');";
 
 			// Store SQL
 			queries.add(query);

@@ -16,7 +16,7 @@ import org.wikidata.wdtk.datamodel.interfaces.SiteLink;
  */
 public class Item extends WikidataObject {
 
-	public HashMap<String, String> claim;
+	public HashMap<String, List<String>> claim;
 	public HashMap<String, List<MonolingualTextValue>> alias;
 	public HashMap<String, SiteLink> link;
 	
