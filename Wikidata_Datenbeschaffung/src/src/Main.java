@@ -111,7 +111,7 @@ public class Main {
 		// Refresh materialized views
 		EntityTimerProcessor.logger.info("Refreshing materialized views...");
 		
-		// TODO: Views generieren
+		successful = SQLMethods.refreshViews();
 		
 		// If error occured, end program
 		if (successful) {

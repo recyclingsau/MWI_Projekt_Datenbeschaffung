@@ -1,5 +1,7 @@
 package src;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -516,4 +518,82 @@ public class SQLMethods {
 			}
 		}
 	}
+	
+	protected static boolean refreshViews(){
+		
+		EntityTimerProcessor.logger.info("Refreshing education institutes view...");
+		boolean successful = refreshSingleView("educationinstitutes_view");
+		
+		if(! successful){
+			EntityTimerProcessor.logger.error("Refresh of education institutes view failed!");
+			return false;
+		}
+		
+		EntityTimerProcessor.logger.info("Refreshing persons view...");
+		successful = refreshSingleView("persons_view");
+		
+		if(! successful){
+			EntityTimerProcessor.logger.error("Refresh of persons view failed!");
+			return false;
+		}
+		
+		EntityTimerProcessor.logger.info("Refreshing search function view...");
+		successful = refreshSingleView("sufu_view");
+		
+		if(! successful){
+			EntityTimerProcessor.logger.error("Refresh of search function view failed!");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static boolean refreshSingleView(String nameOfViewFile){
+		
+		String query = "";
+		
+		// Read SQL-File
+		try {
+			FileReader reader = new FileReader("./views/" + nameOfViewFile + ".sql" );
+
+			for ( int c; ( c = reader.read() ) != -1; ) {
+			    query += c;
+			}
+			reader.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			return false;
+		}
+		
+		// Execute SQL
+		Connection con = openSQLconnection();
+		
+		try {
+			con.prepareStatement(query);
+			con.commit();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			try {
+				con.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+			}
+			return false;
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+		}
+		
+		return true;
+		
+		
+	}
+	
 }
