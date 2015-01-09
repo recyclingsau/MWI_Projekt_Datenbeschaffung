@@ -19,7 +19,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		// Read properties from config-file
+		// Read properties from config-files
 		Helper.loadConfiguration("./custom_properties");
 		Helper.loadConfiguration("./db_properties");
 
