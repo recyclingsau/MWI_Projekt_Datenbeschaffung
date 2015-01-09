@@ -557,7 +557,7 @@ public class SQLMethods {
 			FileReader reader = new FileReader("./views/" + nameOfViewFile + ".sql" );
 
 			for ( int c; ( c = reader.read() ) != -1; ) {
-			    query += c;
+			    query += (char) c;
 			}
 			reader.close();
 			
@@ -570,7 +570,7 @@ public class SQLMethods {
 		Connection con = openSQLconnection();
 		
 		try {
-			con.prepareStatement(query);
+			con.prepareStatement(query).executeUpdate();
 			con.commit();
 			
 		} catch (SQLException e) {
