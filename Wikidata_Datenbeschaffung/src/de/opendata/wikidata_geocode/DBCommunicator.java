@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.json.JSONException;
-
+// KOmmentöeugrsjb .kjwahf -sdkjgv h
 public class DBCommunicator {
 
 	private String db_path, user, password, db_schema;
