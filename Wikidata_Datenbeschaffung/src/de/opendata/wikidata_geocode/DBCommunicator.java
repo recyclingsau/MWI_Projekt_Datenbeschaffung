@@ -8,12 +8,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.json.JSONException;
+
 // KOmmentöeugrsjb .kjwahf -sdkjgv h
 public class DBCommunicator {
 
 	private String db_path, user, password, db_schema;
 
-	public DBCommunicator(String db_path, String db_schema, String user, String password) {
+	public DBCommunicator(String db_path, String db_schema, String user,
+			String password) {
 
 		this.db_path = db_path;
 		this.user = user;
@@ -36,24 +38,24 @@ public class DBCommunicator {
 		con = DriverManager.getConnection(url, this.user, this.password);
 		Statement stmt = con.createStatement();
 
-		String anfrage = "SELECT  item_id,Land,Strasse,Hausnummer,PLZ,Lage_Ort,Koordinaten "
+		String anfrage = "SELECT  item_id,Land,Adresse,Strasse,Hausnummer,PLZ,Lage_Ort,Koordinaten "
 				+ " FROM (SELECT item_id,"
 				+ " MAX(if(property='P17',value,0)) AS Land,"
 				+ " MAX(if(property='P669',value,0)) AS Strasse,"
 				+ " MAX(if(property='P670',value,0)) AS Hausnummer,"
 				+ " MAX(if(property='P281',value,0)) AS PLZ,"
 				+ " MAX(if(property='P1134',value,0)) AS Lage_Ort,"
-				// + " MAX(if(property='P131',value,0)) AS Verwl_Ort,"
+				+ " MAX(if(property='P969',value,0)) AS Adresse,"
 				+ " MAX(if(property='P625',value,0)) AS Koordinaten "
 				+ " FROM educationinstitutes_claim GROUP by item_id) as t"
 				+ " WHERE (Land ='0' OR Strasse='0' OR Hausnummer='0'  "
-				+ " OR PLZ='0' OR Lage_Ort='0') AND Koordinaten !=0 ;";
+				+ " OR PLZ='0' OR Lage_Ort='0' OR Adresse='0' ) AND Koordinaten !=0 ;";
 
 		// System.out.println(anfrage);
 		ResultSet rs = stmt.executeQuery(anfrage);
 
 		// Vorbereitung Webservice
-		WebserviceAufruf webservice = new WebserviceAufruf();
+		WebserviceCall webservice = new WebserviceCall();
 
 		// int count = 1;
 		// Jeden Datensatz durchgehen
@@ -68,9 +70,9 @@ public class DBCommunicator {
 			String[] koordinaten = rs.getString("Koordinaten").split(",");
 			koordinaten[0] = koordinaten[0].trim();
 			koordinaten[1] = koordinaten[1].trim();
-			
-//			double lat = new Umrechner(koordinaten[0]).rechnen();
-//			double lon = new Umrechner(koordinaten[1]).rechnen();
+
+			// double lat = new Umrechner(koordinaten[0]).rechnen();
+			// double lon = new Umrechner(koordinaten[1]).rechnen();
 
 			// System.out.println(lat);
 			// System.out.println(lon);
@@ -99,48 +101,65 @@ public class DBCommunicator {
 
 			// Geo-Daten einzeln mit Property-Key in DB speichern
 
-			if (rs.getString("Land").equals("0")) {
+			if (!webservice.country.equals("")) {
+				if (rs.getString("Land").equals("0")) {
+					String update = "INSERT INTO educationinstitutes_claim"
+							+ " (item_id, property, property_key, value)"
+							+ "VALUES ('" + rs.getString("item_id") + "', "
+							+ "'P17'," + max + ", '" + webservice.country
+							+ "') ;";
+
+					src.EntityTimerProcessor.logger.debug(update);
+
+					con2.prepareStatement(update).execute();
+					max++;
+				}
+			}
+
+			if (!webservice.road.equals("")) {
+			if (rs.getString("Adresse").equals("0")) {
 				String update = "INSERT INTO educationinstitutes_claim"
 						+ " (item_id, property, property_key, value)"
 						+ "VALUES ('" + rs.getString("item_id") + "', "
-						+ "'P17'," + max + ", '" + webservice.country + "') ;";
+						+ "'P969'," + max + ", '" + webservice.road + " " + webservice.house_number + "') ;";
 
 				src.EntityTimerProcessor.logger.debug(update);
 
 				con2.prepareStatement(update).execute();
 				max++;
 			}
-
-			if (rs.getString("Strasse").equals("0")) {
-				String update = "INSERT INTO educationinstitutes_claim"
-						+ " (item_id, property, property_key, value)"
-						+ "VALUES ('" + rs.getString("item_id") + "', "
-						+ "'P669'," + max + ", '" + webservice.road + "') ;";
-
-				src.EntityTimerProcessor.logger.debug(update);
-
-				con2.prepareStatement(update).execute();
-				max++;
 			}
-
-			if (rs.getString("Hausnummer").equals("0")) {
-				String update = "INSERT INTO educationinstitutes_claim"
-						+ " (item_id, property, property_key, value)"
-						+ "VALUES ('" + rs.getString("item_id") + "', "
-						+ "'P670'," + max + ", '" + webservice.house_number
-						+ "') ;";
-
-				src.EntityTimerProcessor.logger.debug(update);
-
-				con2.prepareStatement(update).execute();
-				max++;
-			}
+//			if (rs.getString("Strasse").equals("0")) {
+//				String update = "INSERT INTO educationinstitutes_claim"
+//						+ " (item_id, property, property_key, value)"
+//						+ "VALUES ('" + rs.getString("item_id") + "', "
+//						+ "'P669'," + max + ", '" + webservice.road + "') ;";
+//
+//				src.EntityTimerProcessor.logger.debug(update);
+//
+//				con2.prepareStatement(update).execute();
+//				max++;
+//			}
+//
+//			if (rs.getString("Hausnummer").equals("0")) {
+//				String update = "INSERT INTO educationinstitutes_claim"
+//						+ " (item_id, property, property_key, value)"
+//						+ "VALUES ('" + rs.getString("item_id") + "', "
+//						+ "'P670'," + max + ", '" + webservice.house_number
+//						+ "') ;";
+//
+//				src.EntityTimerProcessor.logger.debug(update);
+//
+//				con2.prepareStatement(update).execute();
+//				max++;
+//			}
 
 			if (rs.getString("PLZ").equals("0")) {
 				String update = "INSERT INTO educationinstitutes_claim"
 						+ " (item_id, property, property_key, value)"
 						+ "VALUES ('" + rs.getString("item_id") + "', "
-						+ "'P281'," + max + ", '" + webservice.plz + "') ;";
+						+ "'P281'," + max + ", '" + webservice.zip_code
+						+ "') ;";
 
 				src.EntityTimerProcessor.logger.debug(update);
 
