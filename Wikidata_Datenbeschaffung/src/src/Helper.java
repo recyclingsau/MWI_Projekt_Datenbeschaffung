@@ -301,7 +301,7 @@ public class Helper {
 
 		// Subscribe to the most recent entity documents of type wikibase item
 		dumpProcessingController.registerEntityDocumentProcessor(
-				entityDocumentProcessor, null, true);
+				entityDocumentProcessor, null, false);
 
 		try {
 			// Start processing (may trigger downloads where needed)

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocumentProcessor;
@@ -131,6 +132,11 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	// ArrayList<ItemDocument>();
 
 	/**
+	 * Collects Strings of all processed Items
+	 */
+	private TreeSet<String> processedItems;
+
+	/**
 	 * Filter to check if item is a job
 	 */
 	final ItemIdValue jobFilterClass;
@@ -138,7 +144,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	/**
 	 * Filter to check if item is a university
 	 */
-	ArrayList<ItemIdValue> educationInstituteFilterList;
+	final ArrayList<ItemIdValue> educationInstituteFilterList;
 
 	/**
 	 * Filter to check if item is a city
@@ -174,6 +180,8 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		cities = new ArrayList<ItemDocument>();
 		states = new ArrayList<ItemDocument>();
 		guiElements = new ArrayList<TermedDocument>();
+
+		processedItems = new TreeSet<String>();
 
 		jobFilterClass = Datamodel.makeWikidataItemIdValue("Q28640");
 
@@ -368,6 +376,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			// TODO: Bei Einfügen neuer GUI-Texte mit Q-ID
 			guiTextsCount++;
 			guiElements.add(itemDocument);
+			break;
 		}
 
 		// Iterate over all statements of the current item and filter by its
@@ -605,6 +614,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			ArrayList<ItemDocument> itemDocuments, String tableName) {
 
 		Item i = null;
+		String itemId;
 
 		// Collection to store the converted Item-Objects
 		ArrayList<Item> itemCollection = new ArrayList<Item>();
@@ -615,12 +625,29 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			// Free memory at every step
 			ItemDocument itemDoc = itemDocuments.remove(0);
 
-			// Convert ItemDocument to Item
-			i = convertToItem(itemDoc);
+			itemId = itemDoc.getEntityId().getId();
 
-			// Add Item to Collection which will be given to the SQL creation
-			// method after the loop
-			itemCollection.add(i);
+			// Check if Item has already been processed in a block before
+			// This shouldn't happen, because it would mean that it's more than
+			// once in the dumpfile. Nevertheless it happens. Good job wikidata!
+			if (processedItems.contains(itemId)) {
+				EntityTimerProcessor.logger
+						.warn("Jumped over duplicate entry with ID " + itemId);
+			} else {
+
+				// Add Item-ID to treeSet to make sure, it's already been
+				// processed
+				processedItems.add(itemId);
+
+				// Convert ItemDocument to Item
+				i = convertToItem(itemDoc);
+
+				// Add Item to Collection which will be given to the SQL
+				// creation
+				// method after the loop
+				itemCollection.add(i);
+			}
+
 		}
 
 		// Create and store SQL statements to store the converted Items in the
@@ -680,6 +707,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	protected void convertAllAndCreateSQL() {
 
 		convertItemsAndCreateSQL(persons, "PERSONS");
+
 		convertItemsAndCreateSQL(jobs, "JOBS");
 		convertItemsAndCreateSQL(educationInstitutes, "EDUCATIONINSTITUTES");
 		convertItemsAndCreateSQL(cities, "CITIES");
@@ -742,14 +770,15 @@ public class ItemProcessor implements EntityDocumentProcessor {
 				 */
 			}
 
-			// Get already saved values of the same properties and add the current one
+			// Get already saved values of the same properties and add the
+			// current one
 			valueList = claims.get(propId);
-			
-			if(valueList == null) {
+
+			if (valueList == null) {
 				valueList = new ArrayList<String>();
 			}
 			valueList.add(value);
-			
+
 			claims.put(propId, valueList);
 
 		}

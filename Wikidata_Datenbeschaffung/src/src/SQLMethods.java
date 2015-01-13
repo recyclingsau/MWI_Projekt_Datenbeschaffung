@@ -124,6 +124,7 @@ public class SQLMethods {
 				// Prevent SQL injection
 				label = label.replaceAll("'", "`");
 				label = label.replaceAll("\"", "`");
+				label = label.replaceAll("\\\\", "");
 
 				String desc = "";
 
@@ -141,6 +142,7 @@ public class SQLMethods {
 					// Prevent SQL injection
 					desc = desc.replaceAll("'", "`");
 					desc = desc.replaceAll("\"", "`");
+					desc = desc.replaceAll("\\\\", "");
 
 				} catch (Exception e) {
 					// No description in this language found. No further
@@ -168,6 +170,7 @@ public class SQLMethods {
 				// Prevent SQL injection
 				description = description.replaceAll("'", "`");
 				description = description.replaceAll("\"", "`");
+				description = description.replaceAll("\\\\", "");
 
 				String label = "";
 
@@ -269,6 +272,7 @@ public class SQLMethods {
 				if (value != null) {
 					value = value.replaceAll("'", "`");
 					value = value.replaceAll("\"", "`");
+					value = value.replaceAll("\\\\", "");
 				}
 
 				// Get initial index for help key. We need this one in our DB
@@ -333,6 +337,7 @@ public class SQLMethods {
 			// Prevent SQL injection
 			value = value.replaceAll("'", "`");
 			value = value.replaceAll("\"", "`");
+			value = value.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
 			String query = "INSERT INTO " + tableName + "_" + tableType
@@ -387,6 +392,7 @@ public class SQLMethods {
 				// Prevent SQL injection
 				value = value.replaceAll("'", "`");
 				value = value.replaceAll("\"", "``");
+				value = value.replaceAll("\\\\", "");
 
 				// Try to get index value of current language key
 				if (keyCounter.get(key) != null) {
@@ -450,6 +456,7 @@ public class SQLMethods {
 			// Prevents SQL injection
 			url = url.replaceAll("'", "%27");
 			url = url.replaceAll("\"", "%22");
+			url = url.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
 			String query = "INSERT INTO " + tableName + "_link VALUES('" + id
