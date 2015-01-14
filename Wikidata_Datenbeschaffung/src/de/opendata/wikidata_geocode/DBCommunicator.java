@@ -168,7 +168,7 @@ public class DBCommunicator {
 //				con2.prepareStatement(update).execute();
 //				max++;
 //			}
-
+			if (!webservice.zip_code.equals("")) {
 			if (rs.getString("PLZ").equals("0")) {
 				String update = "INSERT INTO educationinstitutes_claim"
 						+ " (item_id, property, property_key, value)"
@@ -192,7 +192,8 @@ public class DBCommunicator {
 				con2.prepareStatement(update).execute();
 				max++;
 			}
-
+			}
+			if (!webservice.zip_code.equals("")) {
 			if (rs.getString("Lage_Ort").equals("0")) {
 				String update = "INSERT INTO educationinstitutes_claim"
 						+ " (item_id, property, property_key, value)"
@@ -203,6 +204,7 @@ public class DBCommunicator {
 
 				con2.prepareStatement(update).execute();
 				max++;
+			}
 			}
 			con2.close();
 		}
