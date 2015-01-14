@@ -82,6 +82,7 @@ public class Helper {
 	public static String DB_USERNAME = "";
 	public static String DB_PASSWORD = "";
 	public static String SCHEMA = "A";
+	public static String VIEWS_PATH = "";
 	// TODO: When adding a new configuration attribute
 
 	/**

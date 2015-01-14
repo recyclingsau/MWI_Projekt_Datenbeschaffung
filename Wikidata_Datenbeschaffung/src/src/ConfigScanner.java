@@ -90,6 +90,8 @@ public class ConfigScanner {
 			case "SCHEMA":
 				Helper.SCHEMA = value;
 				break;
+			case "VIEWS_PATH":
+				Helper.VIEWS_PATH = value;
 			// TODO: When adding a new configuration attribute
 			}
 
