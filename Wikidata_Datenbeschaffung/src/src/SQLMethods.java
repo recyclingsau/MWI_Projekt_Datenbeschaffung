@@ -533,7 +533,7 @@ public class SQLMethods {
 		}
 	}
 
-	protected static boolean refreshViews() {
+	protected static void refreshViews() {
 
 		EntityTimerProcessor.logger
 				.info("Refreshing education institutes view...");
@@ -560,7 +560,6 @@ public class SQLMethods {
 					.error("Refresh of search function view failed!");
 		}
 
-		return true;
 	}
 
 	private static boolean refreshSingleView(String nameOfViewFile) {

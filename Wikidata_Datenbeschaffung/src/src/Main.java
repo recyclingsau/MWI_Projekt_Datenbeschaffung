@@ -20,24 +20,25 @@ public class Main {
 	public static void main(String[] args) {
 
 		// Read properties from config-files
-		Helper.loadConfiguration("/opt/wikidata/config/custom_properties");
-		Helper.loadConfiguration("/opt/wikidata/config/db_properties");
-		
+		 Helper.loadConfiguration("/opt/wikidata/config/custom_properties");
+		 Helper.loadConfiguration("/opt/wikidata/config/db_properties");
+
 //		Helper.loadConfiguration("./custom_properties");
 //		Helper.loadConfiguration("./db_properties");
 
 		// Initialize and configure logging for periodically println of status
 		Helper.configureLogging();
-		
+
 		// Delete old logfiles
 		EntityTimerProcessor.logger.info("Deleting old logfiles.");
 		Helper.deleteOldLogfiles();
-		
+
 		// Test DB-Connection
-		if(SQLMethods.openSQLconnection() == null){
+		if (SQLMethods.openSQLconnection() == null) {
 			EntityTimerProcessor.logger.info("End of program.");
 			return;
-		};
+		}
+		;
 
 		// Change schema which will be updated now
 		Helper.changeSchemaInProgram();
@@ -97,38 +98,35 @@ public class Main {
 			EntityTimerProcessor.logger.info("End of program.");
 			return;
 		}
-		
+
 		// Begin of data transformation / cleansing
-		EntityTimerProcessor.logger.info("Begin of data transformation and cleansing...");
-		
+		EntityTimerProcessor.logger
+				.info("Begin of data transformation and cleansing...");
+
 		successful = de.opendata.wikidata_geocode.Geocoder.runGeocoder();
-		
+
 		// If error occured, end program
 		if (successful) {
-			EntityTimerProcessor.logger.info("Data successfully transformated and cleaned.");
-		} else {
-			EntityTimerProcessor.logger.info("End of program.");
-			return;
-		}
-		
-		// Refresh materialized views
-		EntityTimerProcessor.logger.info("Refreshing materialized views...");
-		
-		successful = SQLMethods.refreshViews();
-		
-		// If error occured, end program
-		if (successful) {
-			EntityTimerProcessor.logger.info("Views successfully refreshed.");
+			EntityTimerProcessor.logger
+					.info("Data successfully transformated and cleaned.");
 		} else {
 			EntityTimerProcessor.logger.info("End of program.");
 			return;
 		}
 
+		// Refresh materialized views
+		EntityTimerProcessor.logger.info("Refreshing materialized views...");
+
+		SQLMethods.refreshViews();
+
+		// If error occured, end program
+		EntityTimerProcessor.logger.info("Views refreshed.");
+
 		// After schema is updated, we change the SCHEMA-attribute in the
 		// config-file.
 		// From then, the user application will use the updated schema
 		EntityTimerProcessor.logger
-		.info("Changing value of SCHEMA in config-file ...");
+				.info("Changing value of SCHEMA in config-file ...");
 		Helper.changeSchemaInConfig();
 
 		EntityTimerProcessor.logger.info("Success! End of program.");

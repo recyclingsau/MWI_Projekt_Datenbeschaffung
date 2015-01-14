@@ -162,6 +162,36 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	// .makeWikidataItemIdValue("*item-ID*");
 
 	/**
+	 * Map to store the needed property-IDs for each category of items
+	 */
+	private HashMap<String, ArrayList<String>> neededProperties;
+
+	/**
+	 * List to store the needed property-IDs for persons
+	 */
+	private ArrayList<String> propertiesForPersons;
+
+	/**
+	 * List to store the needed property-IDs for jobs
+	 */
+	private ArrayList<String> propertiesForJobs;
+
+	/**
+	 * List to store the needed property-IDs for educationInstitutes
+	 */
+	private ArrayList<String> propertiesForEducationInstitutes;
+
+	/**
+	 * List to store the needed property-IDs for cities
+	 */
+	private ArrayList<String> propertiesForCities;
+
+	/**
+	 * List to store the needed property-IDs for states
+	 */
+	private ArrayList<String> propertiesForStates;
+
+	/**
 	 * Constructur Initializes several objects
 	 */
 	public ItemProcessor() {
@@ -335,6 +365,40 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		educationInstituteFilterList.add(Datamodel
 				.makeWikidataItemIdValue("Q9166713")); // Tertiärer
 														// Bildungsbereich
+
+		// Fill tables of needed properties
+
+		propertiesForPersons = new ArrayList<String>();
+		propertiesForJobs = new ArrayList<String>();
+		propertiesForEducationInstitutes = new ArrayList<String>();
+		propertiesForCities = new ArrayList<String>();
+		propertiesForStates = new ArrayList<String>();
+
+		propertiesForPersons.add("P69"); // Alma Mater
+		propertiesForPersons.add("P106"); // Tätigkeit
+
+		propertiesForEducationInstitutes.add("P571"); // Gründungsdatum
+		propertiesForEducationInstitutes.add("P1128"); // Anzahl Mitarbeiter
+		propertiesForEducationInstitutes.add("P669"); // Straße
+		propertiesForEducationInstitutes.add("P670"); // Hausnummer
+		propertiesForEducationInstitutes.add("P969"); // Adresse
+		propertiesForEducationInstitutes.add("P281"); // PLZ
+		propertiesForEducationInstitutes.add("P1329"); // Tel
+		propertiesForEducationInstitutes.add("P856"); // HP-Link
+		propertiesForEducationInstitutes.add("P854"); // URL
+		propertiesForEducationInstitutes.add("P968"); // E-Mail
+
+		propertiesForCities.add("P17"); // Staat
+		
+		neededProperties = new HashMap<String, ArrayList<String>>();
+
+		neededProperties.put("PERSONS", propertiesForPersons);
+		neededProperties.put("JOBS", propertiesForJobs);
+		neededProperties.put("EDUCATIONINSTITUTES",
+				propertiesForEducationInstitutes);
+		neededProperties.put("CITIES", propertiesForCities);
+		neededProperties.put("STATES", propertiesForStates);
+
 	}
 
 	/**
@@ -640,7 +704,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 				processedItems.add(itemId);
 
 				// Convert ItemDocument to Item
-				i = convertToItem(itemDoc);
+				i = convertToItem(itemDoc, tableName);
 
 				// Add Item to Collection which will be given to the SQL
 				// creation
@@ -730,58 +794,15 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	 * 
 	 * @author Marco Kinkel
 	 */
-	private Item convertToItem(ItemDocument itemDoc) {
+	private Item convertToItem(ItemDocument itemDoc, String tableName) {
 
 		Iterator<Statement> statementIterator = itemDoc.getAllStatements();
 		HashMap<String, List<String>> claims = new HashMap<String, List<String>>();
 		List<String> valueList;
 
-		// Iterate through statements to create map of claims
-		while (statementIterator.hasNext()) {
-			Statement statement = statementIterator.next();
-
-			// Get ID of property (P xyz)
-			String propId = statement.getClaim().getMainSnak().getPropertyId()
-					.getId();
-			String value = null;
-			JacksonValueSnak snak = null;
-
-			// Try to convert value of property to JacksonValue. If it fails, it
-			// has no or an unknown value
-			try {
-				snak = (JacksonValueSnak) statement.getClaim().getMainSnak();
-
-				value = snak.getDatavalue()
-						.accept(new MyValueVisitor<String>());
-
-			} catch (ClassCastException e) {
-				// Value is either unknown or not existent, so value gets null
-
-				value = null;
-
-				// Optional: Possibility to decide between no and unknown
-				// value:
-				/*
-				 * try { // Try casting value to "No value" // If cast is
-				 * successful, write "Kein Wert" to value JacksonNoValueSnak
-				 * noValSnak = (JacksonNoValueSnak) statement
-				 * .getClaim().getMainSnak(); value = "Kein Wert"; } catch
-				 * (ClassCastException e1) { value = "Unbekannter Wert"; }
-				 */
-			}
-
-			// Get already saved values of the same properties and add the
-			// current one
-			valueList = claims.get(propId);
-
-			if (valueList == null) {
-				valueList = new ArrayList<String>();
-			}
-			valueList.add(value);
-
-			claims.put(propId, valueList);
-
-		}
+		// Get reference of needed Properties
+		ArrayList<String> refToNeededProperties = neededProperties
+				.get(tableName);
 
 		// Create Item-Object and fill attributes
 		Item i = new Item();
@@ -793,6 +814,62 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		i.desc = new HashMap<String, MonolingualTextValue>(
 				itemDoc.getDescriptions());
 		i.link = new HashMap<String, SiteLink>(itemDoc.getSiteLinks());
+
+		// Iterate through statements to create map of claims
+		while (statementIterator.hasNext()) {
+			Statement statement = statementIterator.next();
+
+			// Get ID of property (P xyz)
+			String propId = statement.getClaim().getMainSnak().getPropertyId()
+					.getId();
+
+			// Check if property is needed in database
+			if (refToNeededProperties.contains(propId)) {
+
+				String value = null;
+				JacksonValueSnak snak = null;
+
+				// Try to convert value of property to JacksonValue. If it
+				// fails, it
+				// has no or an unknown value
+				try {
+					snak = (JacksonValueSnak) statement.getClaim()
+							.getMainSnak();
+
+					value = snak.getDatavalue().accept(
+							new MyValueVisitor<String>());
+
+				} catch (ClassCastException e) {
+					// Value is either unknown or not existent, so value gets
+					// null
+
+					value = null;
+
+					// Optional: Possibility to decide between no and unknown
+					// value:
+					/*
+					 * try { // Try casting value to "No value" // If cast is
+					 * successful, write "Kein Wert" to value JacksonNoValueSnak
+					 * noValSnak = (JacksonNoValueSnak) statement
+					 * .getClaim().getMainSnak(); value = "Kein Wert"; } catch
+					 * (ClassCastException e1) { value = "Unbekannter Wert"; }
+					 */
+				}
+
+				// Get already saved values of the same properties and add the
+				// current one
+				valueList = claims.get(propId);
+
+				if (valueList == null) {
+					valueList = new ArrayList<String>();
+				}
+				valueList.add(value);
+
+				claims.put(propId, valueList);
+			}
+
+		}
+
 		i.claim = claims;
 
 		return i;
