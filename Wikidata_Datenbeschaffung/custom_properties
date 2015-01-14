@@ -14,7 +14,7 @@ LOGFILE_COUNT = 10
 # Testing
 # -----------
 OFFLINE_MODE = true
-TIMEOUT_SEC = 800
+TIMEOUT_SEC = 30
 
 # -----------
 # Processing

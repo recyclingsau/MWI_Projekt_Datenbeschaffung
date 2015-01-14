@@ -6,10 +6,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.regex.Pattern;
 
 import org.json.JSONException;
 
-// KOmmentöeugrsjb .kjwahf -sdkjgv h
+// Kommentar
 public class DBCommunicator {
 
 	private String db_path, user, password, db_schema;
@@ -101,6 +102,9 @@ public class DBCommunicator {
 
 			// Geo-Daten einzeln mit Property-Key in DB speichern
 
+
+
+			
 			if (!webservice.country.equals("")) {
 				if (rs.getString("Land").equals("0")) {
 					String update = "INSERT INTO educationinstitutes_claim"
@@ -122,6 +126,17 @@ public class DBCommunicator {
 						+ " (item_id, property, property_key, value)"
 						+ "VALUES ('" + rs.getString("item_id") + "', "
 						+ "'P969'," + max + ", '" + webservice.road + " " + webservice.house_number + "') ;";
+
+				src.EntityTimerProcessor.logger.debug(update);
+
+				con2.prepareStatement(update).execute();
+				max++;
+			}
+			else if (rs.getString("Adresse").substring(0,1).equals("Q") && Pattern.matches("[0-9]+", rs.getString("Land").split("Q")[1])) {
+				String update = "UPDATE educationinstitutes_claim SET "
+								+ "value= " + webservice.road + " " + webservice.house_number
+								+ "WHERE item_id=" + rs.getString("item_id") + " AND property = 'P969' AND property_key= "
+								+ rs.getString("property_key") + ";";
 
 				src.EntityTimerProcessor.logger.debug(update);
 
@@ -160,6 +175,17 @@ public class DBCommunicator {
 						+ "VALUES ('" + rs.getString("item_id") + "', "
 						+ "'P281'," + max + ", '" + webservice.zip_code
 						+ "') ;";
+
+				src.EntityTimerProcessor.logger.debug(update);
+
+				con2.prepareStatement(update).execute();
+				max++;
+			}
+			else if (rs.getString("PLZ").substring(0,1).equals("Q") && Pattern.matches("[0-9]+", rs.getString("Land").split("Q")[1])) {
+				String update = "UPDATE educationinstitutes_claim SET "
+								+ "value= " + webservice.zip_code
+								+ "WHERE item_id=" + rs.getString("item_id") + " AND property = 'P281' AND property_key= "
+								+ rs.getString("property_key") + ";";
 
 				src.EntityTimerProcessor.logger.debug(update);
 
