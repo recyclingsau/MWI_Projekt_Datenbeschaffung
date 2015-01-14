@@ -10,10 +10,25 @@ import java.util.regex.Pattern;
 
 import org.json.JSONException;
 
-// Kommentar
+/**
+ * class DBCommunicator
+ * 
+ * @author Anna Drützler
+ * @version 1.0
+ * */
+
 public class DBCommunicator {
 
 	private String db_path, user, password, db_schema;
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param db_path
+	 * @param db_schema
+	 * @param user
+	 * @param password
+	 */
 
 	public DBCommunicator(String db_path, String db_schema, String user,
 			String password) {
@@ -52,36 +67,21 @@ public class DBCommunicator {
 				+ " WHERE (Land ='0' OR Strasse='0' OR Hausnummer='0'  "
 				+ " OR PLZ='0' OR Lage_Ort='0' OR Adresse='0' ) AND Koordinaten !=0 ;";
 
-		// System.out.println(anfrage);
 		ResultSet rs = stmt.executeQuery(anfrage);
 
 		// Vorbereitung Webservice
 		WebserviceCall webservice = new WebserviceCall();
 
-		// int count = 1;
 		// Jeden Datensatz durchgehen
 		while (rs.next()) {
 
-			// System.out.println("++++++++++++++++++++++++++++");
-			// System.out.println(count + ": item_ID: "
-			// + rs.getString("item_id"));
-			// System.out.println(rs.getString("Koordinaten"));
-
-			// Koordinaten umrechnen
+			// Koordinaten an Komma trennen
 			String[] koordinaten = rs.getString("Koordinaten").split(",");
 			koordinaten[0] = koordinaten[0].trim();
 			koordinaten[1] = koordinaten[1].trim();
 
-			// double lat = new Umrechner(koordinaten[0]).rechnen();
-			// double lon = new Umrechner(koordinaten[1]).rechnen();
-
-			// System.out.println(lat);
-			// System.out.println(lon);
-
-			// umgerechnete Geodaten an den Webwervice übergeben,
+			// getrennte Geodaten an den Webwervice übergeben,
 			webservice.fetchAdressInfo(koordinaten[0], koordinaten[1]);
-
-			// count++;
 
 			// 2. DB Verbindung für das Einfügen der Daten
 			Connection con2;
@@ -145,30 +145,7 @@ public class DBCommunicator {
 					max++;
 				}
 			}
-			// if (rs.getString("Strasse").equals("0")) {
-			// String update = "INSERT INTO educationinstitutes_claim"
-			// + " (item_id, property, property_key, value)"
-			// + "VALUES ('" + rs.getString("item_id") + "', "
-			// + "'P669'," + max + ", '" + webservice.road + "') ;";
-			//
-			// src.EntityTimerProcessor.logger.debug(update);
-			//
-			// con2.prepareStatement(update).execute();
-			// max++;
-			// }
-			//
-			// if (rs.getString("Hausnummer").equals("0")) {
-			// String update = "INSERT INTO educationinstitutes_claim"
-			// + " (item_id, property, property_key, value)"
-			// + "VALUES ('" + rs.getString("item_id") + "', "
-			// + "'P670'," + max + ", '" + webservice.house_number
-			// + "') ;";
-			//
-			// src.EntityTimerProcessor.logger.debug(update);
-			//
-			// con2.prepareStatement(update).execute();
-			// max++;
-			// }
+
 			if (!webservice.zip_code.equals("")) {
 				if (rs.getString("PLZ").equals("0")) {
 					String update = "INSERT INTO educationinstitutes_claim"

@@ -9,6 +9,14 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * class WebserviceCall: Calls WebService, reads and stores address information
+ * into variables.
+ * 
+ * @author Anna Drützler
+ * @version 1.0
+ * */
+
 public class WebserviceCall {
 
 	public String road;
@@ -20,20 +28,16 @@ public class WebserviceCall {
 	public final String WEBSERVICEURL = "http://nominatim.openstreetmap.org/reverse?format=json";
 
 	public WebserviceCall() {
-
 	}
 
 	// Calling web service for records.
 
 	public void fetchAdressInfo(String lat, String lon) throws IOException,
 			JSONException {
-		
-		// Web service with parameters filled.
-		String inquiry = WEBSERVICEURL + "&lat=" + lat
-				+ "&lon=" + lon;
 
-	//	System.out.println(anfrage);
-		
+		// Web service with parameters filled.
+		String inquiry = WEBSERVICEURL + "&lat=" + lat + "&lon=" + lon;
+
 		// HTTP connection
 		URL weburl;
 
@@ -54,45 +58,36 @@ public class WebserviceCall {
 		}
 		in.close(); // close connection
 
-		// JSON
+		// Read JSON objects
 		JSONObject geodata = new JSONObject(output);
 
 		JSONObject address = geodata.getJSONObject("address");
 
-		
 		this.road = this.fetchValue("road", address);
 		this.house_number = this.fetchValue("house_number", address);
 		this.city = this.fetchValue("city", address);
 		if (this.city.equals("")) {
 			this.city = this.fetchValue("town", address);
+		} else if (this.city.equals("")) {
+			this.city = this.fetchValue("city_district", address);
 		}
+
 		else if (this.city.equals("")) {
-			this.city = this.fetchValue("city_district", address); 
-		} 
-		
-		else if (this.city.equals("")) {
-			this.city = this.fetchValue("suburb", address); 
+			this.city = this.fetchValue("suburb", address);
 		}
 
 		this.zip_code = this.fetchValue("postcode", address);
 		this.country = this.fetchValue("country", address);
 		this.country_code = this.fetchValue("country_code", address);
 
-	 /* System.out.println("Straße: " +road); 
-		 System.out.println("Hausnummer: " +house_number);
-		 System.out.println("Stadt: " +city); 
-		 System.out.println("PLZ: " +plz);
-		 System.out.println("Land: " +country); 
-		 System.out.println("Landcode: " +country_code); */
-		 
-
 	}
-	 // Wofür?
+
+	// Wofür?
 	private String fetchValue(String key, JSONObject o) throws JSONException {
 		String ret;
 		if (o.has(key)) {
 			ret = o.getString(key);
-			
+
 			// Prevent SQL injection
 			ret = ret.replaceAll("'", "`");
 			ret = ret.replaceAll("\"", "`");
