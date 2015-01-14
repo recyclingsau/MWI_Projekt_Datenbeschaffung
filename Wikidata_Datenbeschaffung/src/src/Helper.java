@@ -321,7 +321,7 @@ public class Helper {
 	}
 	
 	public static void deleteOldLogfiles(){
-		File logfileFolder = new File(LOGFILE_PATH + "\\");
+		File logfileFolder = new File(LOGFILE_PATH);
 		File[] logFiles;
 		
 		// Array is already sorted by date increasing (oldest comes first)

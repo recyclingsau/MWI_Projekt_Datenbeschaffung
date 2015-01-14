@@ -2,7 +2,7 @@
 # Logger
 # -----------
 UPDATE_INTERVAL_SEC = 10
-LOGFILE_PATH = /opt/wikidata/logfiles
+LOGFILE_PATH = C:\wikidata\logfiles
 
 # Possible levels: ALL, ERROR, DEBUG, INFO, OFF, FATAL, TRACE, WARN
 LOGGING_LEVEL = ALL
@@ -14,11 +14,11 @@ LOGFILE_COUNT = 10
 # Testing
 # -----------
 OFFLINE_MODE = true
-TIMEOUT_SEC = 30
+TIMEOUT_SEC = 10
 
 # -----------
 # Processing
 # -----------
-DUMPFILE_PATH = /opt/wikidata/
+DUMPFILE_PATH = C:\wikidata
 BLOCK_SIZE = 10000
-VIEWS_PATH = /opt/wikidata/views/
+VIEWS_PATH = .\views\

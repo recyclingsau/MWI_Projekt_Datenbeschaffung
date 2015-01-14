@@ -20,7 +20,6 @@ public class Main {
 	public static void main(String[] args) {
 
 		// Read properties from config-files
-		// TODO
 //		Helper.loadConfiguration("/opt/wikidata/config/custom_properties");
 //		Helper.loadConfiguration("/opt/wikidata/config/db_properties");
 		
