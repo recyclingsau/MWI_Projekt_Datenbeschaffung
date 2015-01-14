@@ -56,14 +56,21 @@ public class SQLMethods {
 		Connection con = null;
 
 		try {
-			con = DriverManager.getConnection("jdbc:mysql://"
-					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user="
-					+ Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
+//			con = DriverManager.getConnection("jdbc:mysql://"
+//					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user="
+//					+ Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
+			
+			String url = "jdbc:mysql://"
+					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA;
+			
+			con = DriverManager.getConnection(url, Helper.DB_USERNAME, Helper.DB_PASSWORD);
+			
 			con.setAutoCommit(false);
 			return con;
 		} catch (SQLException e) {
 			EntityTimerProcessor.logger
 					.error("Connection to DB failed. Abort!");
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -175,7 +182,7 @@ public class SQLMethods {
 				String label = "";
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO GUI_TEXTS VALUES('" + obj.id
+				String query = "INSERT INTO GUI_TEXTS (item_id, language, label, description) VALUES('" + obj.id
 						+ "', '" + language + "', '" + label + "', '"
 						+ description + "');";
 
@@ -289,7 +296,7 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName + "_claim values('"
+				String query = "INSERT INTO " + tableName + "_claim (item_id, property, property_key, value) VALUES('"
 						+ i.id + "', '" + key + "', '" + newIndex + "', '"
 						+ value + "');";
 
@@ -404,7 +411,7 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName + "_alias VALUES('"
+				String query = "INSERT INTO " + tableName + "_alias (item_id, language, language_key, alias) VALUES('"
 						+ id + "', '" + key + "', '" + newIndex + "', '"
 						+ value + "');";
 
@@ -459,7 +466,7 @@ public class SQLMethods {
 			url = url.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName + "_link VALUES('" + id
+			String query = "INSERT INTO " + tableName + "_link (item_id, language, wiki_id, url) VALUES('" + id
 					+ "', '" + language + "', '" + group + "', '" + url + "');";
 
 			// Store SQL
@@ -535,7 +542,6 @@ public class SQLMethods {
 		if (!successful) {
 			EntityTimerProcessor.logger
 					.error("Refresh of education institutes view failed!");
-			return false;
 		}
 
 		EntityTimerProcessor.logger.info("Refreshing persons view...");
@@ -544,7 +550,6 @@ public class SQLMethods {
 		if (!successful) {
 			EntityTimerProcessor.logger
 					.error("Refresh of persons view failed!");
-			return false;
 		}
 
 		EntityTimerProcessor.logger.info("Refreshing search function view...");
@@ -553,7 +558,6 @@ public class SQLMethods {
 		if (!successful) {
 			EntityTimerProcessor.logger
 					.error("Refresh of search function view failed!");
-			return false;
 		}
 
 		return true;

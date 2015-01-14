@@ -130,7 +130,7 @@ public class Helper {
 		String timestamp = year + "_" + month + "_" + date + "-" + hour + "_"
 				+ minute + "_" + second;
 
-		fileAppender.setFile(LOGFILE_PATH + "\\" + timestamp + ".txt");
+		fileAppender.setFile(LOGFILE_PATH + timestamp + ".txt");
 
 		String pattern;
 
@@ -166,15 +166,13 @@ public class Helper {
 			try {
 				parser.processLineByLine();
 			} catch (IOException e) {
-				System.out
-						.println("Error while parsing config-file at "
-								+ parser.getFilePath().getAbsolutePath()
-								+ ". Abort!");
+				System.out.println("Error while parsing config-file at "
+						+ parser.getFilePath().getAbsolutePath() + ". Abort!");
 				return false;
 			}
 		} catch (FileNotFoundException e) {
-			System.out
-					.println("Didn't find config-file expected at " + path + " . Abort!");
+			System.out.println("Didn't find config-file expected at " + path
+					+ " . Abort!");
 			return false;
 		}
 		return true;
@@ -209,18 +207,18 @@ public class Helper {
 			try {
 				while ((line = br.readLine()) != null) {
 
-					if (!line.equals("") && ! line.substring(0, 1).equals("#")) {
+					if (!line.equals("") && !line.substring(0, 1).equals("#")) {
 
-							// Remove whitespaces
-							lineWOwhitespace = line.replaceAll(" ", "");
-							// Get property
-							property = lineWOwhitespace.split("=")[0];
+						// Remove whitespaces
+						lineWOwhitespace = line.replaceAll(" ", "");
+						// Get property
+						property = lineWOwhitespace.split("=")[0];
 
-							if (property.equalsIgnoreCase("SCHEMA")) {
-								newtext += "SCHEMA = " + Helper.SCHEMA + "\n";
-							} else {
-								newtext += line + "\n";
-							}
+						if (property.equalsIgnoreCase("SCHEMA")) {
+							newtext += "SCHEMA = " + Helper.SCHEMA + "\n";
+						} else {
+							newtext += line + "\n";
+						}
 					} else {
 						newtext += line + "\n";
 					}
@@ -307,7 +305,7 @@ public class Helper {
 		try {
 			// Start processing (may trigger downloads where needed)
 			dumpProcessingController.processMostRecentJsonDump();
-//			dumpProcessingController.processAllRecentRevisionDumps();
+			// dumpProcessingController.processAllRecentRevisionDumps();
 		} catch (TimeoutException e) {
 			EntityTimerProcessor.logger.info("Reached timer of " + TIMEOUT_SEC
 					+ " seconds.");
@@ -319,13 +317,20 @@ public class Helper {
 
 		return true;
 	}
-	
+
 	public static void deleteOldLogfiles(){
 		File logfileFolder = new File(LOGFILE_PATH);
-		File[] logFiles;
+		File[] logFiles = null;
 		
 		// Array is already sorted by date increasing (oldest comes first)
+		if(logfileFolder != null){
 		logFiles = logfileFolder.listFiles();
+		}
+		
+		if(logFiles == null) {
+			EntityTimerProcessor.logger.warn("No logfiles found.");
+			return;
+		}
 		
 		for(int count = 0; count < (logFiles.length - Helper.LOGFILE_COUNT); count++){
 			
