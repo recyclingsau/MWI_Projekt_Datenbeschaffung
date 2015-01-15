@@ -194,7 +194,7 @@ public class Helper {
 	 * user-application.
 	 */
 	public static void changeSchemaInConfig() {
-		File file = new File(Main.CUSTOM_PROPERTIES_PATH);
+		File file = new File(Main.DB_PROPERTIES_PATH);
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));

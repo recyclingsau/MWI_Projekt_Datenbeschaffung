@@ -8,9 +8,12 @@ package src;
  */
 public class Main {
 	
-	public static final String CUSTOM_PROPERTIES_PATH = "/opt/wikidata/config/custom_properties";
-	public static final String DB_PROPERTIES_PATH = "/opt/wikidata/config/db_properties";
+//	public static final String CUSTOM_PROPERTIES_PATH = "/opt/wikidata/config/custom_properties";
+//	public static final String DB_PROPERTIES_PATH = "/opt/wikidata/config/db_properties";
 
+	public static final String CUSTOM_PROPERTIES_PATH = "./custom_properties";
+	public static final String DB_PROPERTIES_PATH = "./db_properties";
+	
 	/**
 	 * Main method. Calls methods to clear database, read data from wikidata,
 	 * parse them and write them to the database.
@@ -25,9 +28,6 @@ public class Main {
 		// Read properties from config-files
 		 Helper.loadConfiguration(CUSTOM_PROPERTIES_PATH);
 		 Helper.loadConfiguration(DB_PROPERTIES_PATH);
-
-//		Helper.loadConfiguration("./custom_properties");
-//		Helper.loadConfiguration("./db_properties");
 
 		// Initialize and configure logging for periodically println of status
 		Helper.configureLogging();
