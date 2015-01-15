@@ -194,7 +194,7 @@ public class Helper {
 	 * user-application.
 	 */
 	public static void changeSchemaInConfig() {
-		File file = new File("./custom_properties");
+		File file = new File(Main.CUSTOM_PROPERTIES_PATH);
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
@@ -215,7 +215,7 @@ public class Helper {
 						property = lineWOwhitespace.split("=")[0];
 
 						if (property.equalsIgnoreCase("SCHEMA")) {
-							newtext += "SCHEMA = " + Helper.SCHEMA + "\n";
+							newtext += "SCHEMA = " + Helper.SCHEMA.toLowerCase() + "\n";
 						} else {
 							newtext += line + "\n";
 						}

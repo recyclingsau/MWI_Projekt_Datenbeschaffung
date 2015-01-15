@@ -99,10 +99,10 @@ public class SQLMethods {
 			createLinksStatements(tableName, i.id, i.link);
 
 			// Create and store SQL statements for descriptions
-			createOthersStatements("DESC", tableName, i.id, i.desc);
+			createOthersStatements("desc", tableName, i.id, i.desc);
 
 			// Create and store SQL statements for labels
-			createOthersStatements("LABEL", tableName, i.id, i.label);
+			createOthersStatements("label", tableName, i.id, i.label);
 		}
 	}
 
@@ -157,7 +157,7 @@ public class SQLMethods {
 				}
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO GUI_TEXTS (item_id, language, label, description) VALUES('" + obj.id
+				String query = "INSERT INTO gui_texts (item_id, language, label, description) VALUES('" + obj.id
 						+ "', '" + language + "', '" + label + "', '" + desc
 						+ "');";
 
@@ -182,7 +182,7 @@ public class SQLMethods {
 				String label = "";
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO GUI_TEXTS (item_id, language, label, description) VALUES('" + obj.id
+				String query = "INSERT INTO gui_texts (item_id, language, label, description) VALUES('" + obj.id
 						+ "', '" + language + "', '" + label + "', '"
 						+ description + "');";
 
@@ -209,33 +209,33 @@ public class SQLMethods {
 		// String lock_alias = "LOCK TABLE " + tableName
 		// + "_alias WRITE;";
 		// queries.add(lock_alias);
-		String empty_alias = "DELETE FROM " + tableName + "_alias;";
+		String empty_alias = "DELETE FROM " + tableName.toLowerCase() + "_alias;";
 		queries.add(empty_alias);
 
 		// Lock and empty label-table
 		// String lock_label = "LOCK TABLE " + tableName
 		// + "_label WRITE;";
 		// queries.add(lock_label);
-		String empty_label = "DELETE FROM " + tableName + "_label;";
+		String empty_label = "DELETE FROM " + tableName.toLowerCase() + "_label;";
 		queries.add(empty_label);
 
 		// Lock and empty descriptions-table
-		// String lock_desc = "LOCK TABLE " + tableName + "_desc WRITE;";
+		// String lock_desc = "LOCK TABLE " + tableName.toLowerCase() + "_desc WRITE;";
 		// queries.add(lock_desc);
-		String empty_desc = "DELETE FROM " + tableName + "_desc;";
+		String empty_desc = "DELETE FROM " + tableName.toLowerCase() + "_desc;";
 		queries.add(empty_desc);
 
 		// Lock and empty claim-table
 		// String lock_claim = "LOCK TABLE " + tableName
 		// + "_claim WRITE;";
 		// queries.add(lock_claim);
-		String empty_claim = "DELETE FROM " + tableName + "_claim;";
+		String empty_claim = "DELETE FROM " + tableName.toLowerCase() + "_claim;";
 		queries.add(empty_claim);
 
 		// Lock and empty link-table
-		// String lock_link = "LOCK TABLE " + tableName + "_link WRITE;";
+		// String lock_link = "LOCK TABLE " + tableName.toLowerCase() + "_link WRITE;";
 		// queries.add(lock_link);
-		String empty_link = "DELETE FROM " + tableName + "_link;";
+		String empty_link = "DELETE FROM " + tableName.toLowerCase() + "_link;";
 		queries.add(empty_link);
 
 	}
@@ -245,10 +245,10 @@ public class SQLMethods {
 	 */
 	public static void createOtherDeletionStatement(String tableName) {
 
-		// String lock = "LOCK TABLE " + tableName + " WRITE;";
+		// String lock = "LOCK TABLE " + tableName.toLowerCase() + " WRITE;";
 		// queries.add(lock);
 
-		String empty = "DELETE FROM " + tableName + ";";
+		String empty = "DELETE FROM " + tableName.toLowerCase() + ";";
 		queries.add(empty);
 	}
 
@@ -296,7 +296,7 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName + "_claim (item_id, property, property_key, value) VALUES('"
+				String query = "INSERT INTO " + tableName.toLowerCase() + "_claim (item_id, property, property_key, value) VALUES('"
 						+ i.id + "', '" + key + "', '" + newIndex + "', '"
 						+ value + "');";
 
@@ -347,7 +347,7 @@ public class SQLMethods {
 			value = value.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName + "_" + tableType
+			String query = "INSERT INTO " + tableName.toLowerCase() + "_" + tableType.toLowerCase()
 					+ " VALUES('" + id + "', '" + key + "', '" + value + "');";
 
 			// Store SQL query
@@ -411,7 +411,7 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName + "_alias (item_id, language, language_key, alias) VALUES('"
+				String query = "INSERT INTO " + tableName.toLowerCase() + "_alias (item_id, language, language_key, alias) VALUES('"
 						+ id + "', '" + key + "', '" + newIndex + "', '"
 						+ value + "');";
 
@@ -466,7 +466,7 @@ public class SQLMethods {
 			url = url.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName + "_link (item_id, language, wiki_id, url) VALUES('" + id
+			String query = "INSERT INTO " + tableName.toLowerCase() + "_link (item_id, language, wiki_id, url) VALUES('" + id
 					+ "', '" + language + "', '" + group + "', '" + url + "');";
 
 			// Store SQL
@@ -554,6 +554,14 @@ public class SQLMethods {
 
 		EntityTimerProcessor.logger.info("Refreshing search function view...");
 		successful = refreshSingleView("sufu_view");
+
+		if (!successful) {
+			EntityTimerProcessor.logger
+					.error("Refresh of search function view failed!");
+		}
+		
+		EntityTimerProcessor.logger.info("Refreshing languages view...");
+		successful = refreshSingleView("languages_view");
 
 		if (!successful) {
 			EntityTimerProcessor.logger
