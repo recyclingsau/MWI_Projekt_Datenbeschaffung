@@ -182,10 +182,10 @@ public class Helper {
 	 * Changes DB-schema in which the programm will write.
 	 */
 	public static void changeSchemaInProgram() {
-		if (SCHEMA.equals("A")) {
-			SCHEMA = "B";
-		} else if (SCHEMA.equals("B")) {
-			SCHEMA = "A";
+		if (SCHEMA.equalsIgnoreCase("a")) {
+			SCHEMA = "b";
+		} else if (SCHEMA.equalsIgnoreCase("b")) {
+			SCHEMA = "a";
 		}
 	}
 
