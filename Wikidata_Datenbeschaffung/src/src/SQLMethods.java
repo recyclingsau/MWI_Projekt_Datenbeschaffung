@@ -56,15 +56,16 @@ public class SQLMethods {
 		Connection con = null;
 
 		try {
-//			con = DriverManager.getConnection("jdbc:mysql://"
-//					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user="
-//					+ Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
-			
-			String url = "jdbc:mysql://"
-					+ Helper.DATABASE_PATH + "_" + Helper.SCHEMA;
-			
-			con = DriverManager.getConnection(url, Helper.DB_USERNAME, Helper.DB_PASSWORD);
-			
+			// con = DriverManager.getConnection("jdbc:mysql://"
+			// + Helper.DATABASE_PATH + "_" + Helper.SCHEMA + "?user="
+			// + Helper.DB_USERNAME + "&password=" + Helper.DB_PASSWORD);
+
+			String url = "jdbc:mysql://" + Helper.DATABASE_PATH + "_"
+					+ Helper.SCHEMA;
+
+			con = DriverManager.getConnection(url, Helper.DB_USERNAME,
+					Helper.DB_PASSWORD);
+
 			con.setAutoCommit(false);
 			return con;
 		} catch (SQLException e) {
@@ -157,9 +158,14 @@ public class SQLMethods {
 				}
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO gui_texts (item_id, language, label, description) VALUES('" + obj.id
-						+ "', '" + language + "', '" + label + "', '" + desc
-						+ "');";
+				String query = "INSERT INTO gui_texts (item_id, language, label, description) VALUES('"
+						+ obj.id
+						+ "', '"
+						+ language
+						+ "', '"
+						+ label
+						+ "', '"
+						+ desc + "');";
 
 				// Store SQL query
 				queries.add(query);
@@ -182,8 +188,13 @@ public class SQLMethods {
 				String label = "";
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO gui_texts (item_id, language, label, description) VALUES('" + obj.id
-						+ "', '" + language + "', '" + label + "', '"
+				String query = "INSERT INTO gui_texts (item_id, language, label, description) VALUES('"
+						+ obj.id
+						+ "', '"
+						+ language
+						+ "', '"
+						+ label
+						+ "', '"
 						+ description + "');";
 
 				// Store SQL query
@@ -209,18 +220,21 @@ public class SQLMethods {
 		// String lock_alias = "LOCK TABLE " + tableName
 		// + "_alias WRITE;";
 		// queries.add(lock_alias);
-		String empty_alias = "DELETE FROM " + tableName.toLowerCase() + "_alias;";
+		String empty_alias = "DELETE FROM " + tableName.toLowerCase()
+				+ "_alias;";
 		queries.add(empty_alias);
 
 		// Lock and empty label-table
 		// String lock_label = "LOCK TABLE " + tableName
 		// + "_label WRITE;";
 		// queries.add(lock_label);
-		String empty_label = "DELETE FROM " + tableName.toLowerCase() + "_label;";
+		String empty_label = "DELETE FROM " + tableName.toLowerCase()
+				+ "_label;";
 		queries.add(empty_label);
 
 		// Lock and empty descriptions-table
-		// String lock_desc = "LOCK TABLE " + tableName.toLowerCase() + "_desc WRITE;";
+		// String lock_desc = "LOCK TABLE " + tableName.toLowerCase() +
+		// "_desc WRITE;";
 		// queries.add(lock_desc);
 		String empty_desc = "DELETE FROM " + tableName.toLowerCase() + "_desc;";
 		queries.add(empty_desc);
@@ -229,11 +243,13 @@ public class SQLMethods {
 		// String lock_claim = "LOCK TABLE " + tableName
 		// + "_claim WRITE;";
 		// queries.add(lock_claim);
-		String empty_claim = "DELETE FROM " + tableName.toLowerCase() + "_claim;";
+		String empty_claim = "DELETE FROM " + tableName.toLowerCase()
+				+ "_claim;";
 		queries.add(empty_claim);
 
 		// Lock and empty link-table
-		// String lock_link = "LOCK TABLE " + tableName.toLowerCase() + "_link WRITE;";
+		// String lock_link = "LOCK TABLE " + tableName.toLowerCase() +
+		// "_link WRITE;";
 		// queries.add(lock_link);
 		String empty_link = "DELETE FROM " + tableName.toLowerCase() + "_link;";
 		queries.add(empty_link);
@@ -296,7 +312,9 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName.toLowerCase() + "_claim (item_id, property, property_key, value) VALUES('"
+				String query = "INSERT INTO "
+						+ tableName.toLowerCase()
+						+ "_claim (item_id, property, property_key, value) VALUES('"
 						+ i.id + "', '" + key + "', '" + newIndex + "', '"
 						+ value + "');";
 
@@ -347,8 +365,9 @@ public class SQLMethods {
 			value = value.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName.toLowerCase() + "_" + tableType.toLowerCase()
-					+ " VALUES('" + id + "', '" + key + "', '" + value + "');";
+			String query = "INSERT INTO " + tableName.toLowerCase() + "_"
+					+ tableType.toLowerCase() + " VALUES('" + id + "', '" + key
+					+ "', '" + value + "');";
 
 			// Store SQL query
 			queries.add(query);
@@ -411,7 +430,9 @@ public class SQLMethods {
 				keyCounter.put(key, newIndex);
 
 				// Create SQL query dynamically
-				String query = "INSERT INTO " + tableName.toLowerCase() + "_alias (item_id, language, language_key, alias) VALUES('"
+				String query = "INSERT INTO "
+						+ tableName.toLowerCase()
+						+ "_alias (item_id, language, language_key, alias) VALUES('"
 						+ id + "', '" + key + "', '" + newIndex + "', '"
 						+ value + "');";
 
@@ -466,7 +487,8 @@ public class SQLMethods {
 			url = url.replaceAll("\\\\", "");
 
 			// Create SQL query dynamically
-			String query = "INSERT INTO " + tableName.toLowerCase() + "_link (item_id, language, wiki_id, url) VALUES('" + id
+			String query = "INSERT INTO " + tableName.toLowerCase()
+					+ "_link (item_id, language, wiki_id, url) VALUES('" + id
 					+ "', '" + language + "', '" + group + "', '" + url + "');";
 
 			// Store SQL
@@ -537,7 +559,7 @@ public class SQLMethods {
 
 		EntityTimerProcessor.logger
 				.info("Refreshing education institutes view...");
-		boolean successful = refreshSingleView("educationinstitutes_view");
+		boolean successful = refreshSingleView("educationinstitutes");
 
 		if (!successful) {
 			EntityTimerProcessor.logger
@@ -545,7 +567,7 @@ public class SQLMethods {
 		}
 
 		EntityTimerProcessor.logger.info("Refreshing persons view...");
-		successful = refreshSingleView("persons_view");
+		successful = refreshSingleView("persons");
 
 		if (!successful) {
 			EntityTimerProcessor.logger
@@ -553,19 +575,19 @@ public class SQLMethods {
 		}
 
 		EntityTimerProcessor.logger.info("Refreshing search function view...");
-		successful = refreshSingleView("sufu_view");
+		successful = refreshSingleView("sufu");
 
 		if (!successful) {
 			EntityTimerProcessor.logger
 					.error("Refresh of search function view failed!");
 		}
-		
+
 		EntityTimerProcessor.logger.info("Refreshing languages view...");
-		successful = refreshSingleView("languages_view");
+		successful = refreshSingleView("languages");
 
 		if (!successful) {
 			EntityTimerProcessor.logger
-					.error("Refresh of search function view failed!");
+					.error("Refresh of languages function view failed!");
 		}
 
 	}
@@ -585,8 +607,8 @@ public class SQLMethods {
 			reader.close();
 
 		} catch (IOException e) {
-			EntityTimerProcessor.logger.error("View file "
-					+ Helper.VIEWS_PATH + nameOfViewFile
+			EntityTimerProcessor.logger.error("View file " + Helper.VIEWS_PATH
+					+ nameOfViewFile
 					+ ".sql not found! Can't refresh this view!");
 			return false;
 		}
@@ -595,25 +617,36 @@ public class SQLMethods {
 		Connection con = openSQLconnection();
 
 		try {
-			con.prepareStatement(query).executeUpdate();
+			// query = query.replaceAll("`", "");
+			query = query.trim();
+			String[] queries = query.split(";");
+
+			for (String singleQuery : queries) {
+				
+				con.prepareStatement(singleQuery).execute();
+			}
 			con.commit();
 
 		} catch (SQLException e) {
 
-			EntityTimerProcessor.logger.error("Can't execute SQL-statement to update view " + nameOfViewFile + ". Try to rollback...");
+			EntityTimerProcessor.logger
+					.error("Can't execute SQL-statement to update view "
+							+ nameOfViewFile + ". Try to rollback...");
 			EntityTimerProcessor.logger.error(e.getMessage());
-			
+
 			try {
 				con.rollback();
 			} catch (SQLException e1) {
-				EntityTimerProcessor.logger.error("Rollback of view-update " + nameOfViewFile + " was not successful.");
+				EntityTimerProcessor.logger.error("Rollback of view-update "
+						+ nameOfViewFile + " was not successful.");
 			}
 			return false;
 		} finally {
 			try {
 				con.close();
 			} catch (SQLException e) {
-				EntityTimerProcessor.logger.error("DB-Connection could not be closed.");
+				EntityTimerProcessor.logger
+						.error("DB-Connection could not be closed.");
 				return false;
 			}
 		}
