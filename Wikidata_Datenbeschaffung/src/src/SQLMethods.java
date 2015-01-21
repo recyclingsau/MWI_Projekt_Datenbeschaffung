@@ -71,7 +71,6 @@ public class SQLMethods {
 		} catch (SQLException e) {
 			EntityTimerProcessor.logger
 					.error("Connection to DB failed. Abort!");
-			e.printStackTrace();
 			return null;
 		}
 	}

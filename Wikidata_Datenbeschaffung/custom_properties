@@ -2,7 +2,7 @@
 # Logger
 # -----------
 UPDATE_INTERVAL_SEC = 10
-LOGFILE_PATH = C:\wikidata\logfiles
+LOGFILE_PATH = C:\wikidata\logfiles\
 
 # Possible levels: ALL, ERROR, DEBUG, INFO, OFF, FATAL, TRACE, WARN
 LOGGING_LEVEL = ALL

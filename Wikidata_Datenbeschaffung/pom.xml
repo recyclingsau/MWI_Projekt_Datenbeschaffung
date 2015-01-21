@@ -23,10 +23,5 @@
   		<artifactId>slf4j-log4j12</artifactId>
   		<version>1.7.6</version>
   	</dependency>
-  	<dependency>
-  		<groupId>org.wikidata.wdtk</groupId>
-  		<artifactId>wdtk-dumpfiles</artifactId>
-  		<version>0.3.0</version>
-  	</dependency>
   </dependencies>
 </project>

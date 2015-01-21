@@ -387,6 +387,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		propertiesForEducationInstitutes.add("P856"); // HP-Link
 		propertiesForEducationInstitutes.add("P854"); // URL
 		propertiesForEducationInstitutes.add("P968"); // E-Mail
+		propertiesForEducationInstitutes.add("P625"); // Geo-Koordinaten
 
 		propertiesForCities.add("P17"); // Staat
 		
