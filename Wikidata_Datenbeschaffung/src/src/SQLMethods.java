@@ -623,7 +623,7 @@ public class SQLMethods {
 
 			for (String singleQuery : queries) {
 				
-				con.prepareStatement(singleQuery).execute();
+				con.prepareStatement(singleQuery.toLowerCase()).execute();
 			}
 			con.commit();
 

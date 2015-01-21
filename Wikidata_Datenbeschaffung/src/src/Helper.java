@@ -68,7 +68,7 @@ public class Helper {
 	 * it allows for final processing and proper closing to happen without
 	 * having to wait for a whole dump file to process.
 	 * 
-	 * Can be overwritten by custom_properties-file
+	 * Will be overwritten by custom_properties-file
 	 */
 	public static int TIMEOUT_SEC = 100;
 
