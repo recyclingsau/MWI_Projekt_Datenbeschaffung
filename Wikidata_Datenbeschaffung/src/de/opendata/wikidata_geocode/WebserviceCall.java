@@ -43,54 +43,52 @@ public class WebserviceCall {
 		URL weburl;
 		String output = "";
 		String line;
-try{
-		weburl = new URL(inquiry);
+		try {
+			weburl = new URL(inquiry);
 
-		HttpURLConnection conweb = (HttpURLConnection) weburl.openConnection();
-		conweb.setRequestMethod("GET");
+			HttpURLConnection conweb = (HttpURLConnection) weburl
+					.openConnection();
+			conweb.setRequestMethod("GET");
 
-		// Read output
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				conweb.getInputStream()));
-		
+			// Read output
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					conweb.getInputStream()));
 
-		while ((line = in.readLine()) != null) {
-			output = output + line;
+			while ((line = in.readLine()) != null) {
+				output = output + line;
+			}
+			in.close(); // close connection
+		} catch (IOException e) {
+			EntityTimerProcessor.logger.error("Error using webservice.");
+			return false;
 		}
-		in.close(); // close connection
-}
-catch (IOException e){
-	EntityTimerProcessor.logger.error("Error using webservice.");
-	return false;
-}
- try{
-		// Read JSON objects
-		JSONObject geodata = new JSONObject(output);
+		try {
+			// Read JSON objects
+			JSONObject geodata = new JSONObject(output);
 
-		JSONObject address = geodata.getJSONObject("address");
+			JSONObject address = geodata.getJSONObject("address");
 
-		this.road = this.fetchValue("road", address);
-		this.house_number = this.fetchValue("house_number", address);
-		this.city = this.fetchValue("city", address);
-		if (this.city.equals("")) {
-			this.city = this.fetchValue("town", address);
-		} else if (this.city.equals("")) {
-			this.city = this.fetchValue("city_district", address);
+			this.road = this.fetchValue("road", address);
+			this.house_number = this.fetchValue("house_number", address);
+			this.city = this.fetchValue("city", address);
+			if (this.city.equals("")) {
+				this.city = this.fetchValue("town", address);
+			} else if (this.city.equals("")) {
+				this.city = this.fetchValue("city_district", address);
+			}
+
+			else if (this.city.equals("")) {
+				this.city = this.fetchValue("suburb", address);
+			}
+
+			this.zip_code = this.fetchValue("postcode", address);
+			this.country = this.fetchValue("country", address);
+			this.country_code = this.fetchValue("country_code", address);
+		} catch (JSONException e) {
+			EntityTimerProcessor.logger.error("Error reading JSON-Object.");
+			return false;
 		}
-
-		else if (this.city.equals("")) {
-			this.city = this.fetchValue("suburb", address);
-		}
-
-		this.zip_code = this.fetchValue("postcode", address);
-		this.country = this.fetchValue("country", address);
-		this.country_code = this.fetchValue("country_code", address);
-	}
- catch (JSONException e){
-	 EntityTimerProcessor.logger.error("Error reading JSON-Object.");
-		return false;
- }
- return true;
+		return true;
 	}
 
 	// Wofür?

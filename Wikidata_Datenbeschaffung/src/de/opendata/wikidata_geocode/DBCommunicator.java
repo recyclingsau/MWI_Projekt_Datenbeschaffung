@@ -48,6 +48,9 @@ public class DBCommunicator {
 	public boolean completeData() {
 		String driver = "com.mysql.jdbc.Driver";
 		String url = "jdbc:mysql://" + this.db_path + "_" + this.db_schema;
+		Connection con;
+		ResultSet rs;
+		WebserviceCall webservice;
 
 		try {
 			Class.forName(driver);
@@ -56,15 +59,13 @@ public class DBCommunicator {
 			return false;
 		}
 
-		Connection con;
 		try {
 			con = DriverManager.getConnection(url, this.user, this.password);
 		} catch (SQLException e) {
 			EntityTimerProcessor.logger.error("Couldn't connect to database.");
 			return false;
 		}
-		ResultSet rs;
-		WebserviceCall webservice;
+
 		try {
 			Statement stmt = con.createStatement();
 
@@ -83,7 +84,7 @@ public class DBCommunicator {
 
 			rs = stmt.executeQuery(anfrage);
 
-			// Vorbereitung Webservice
+			// Vorbereitung Webservice (empty constructor)
 			webservice = new WebserviceCall();
 
 			if (rs != null && webservice != null) {

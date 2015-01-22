@@ -382,6 +382,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		propertiesForEducationInstitutes.add("P669"); // Straﬂe
 		propertiesForEducationInstitutes.add("P670"); // Hausnummer
 		propertiesForEducationInstitutes.add("P969"); // Adresse
+		propertiesForEducationInstitutes.add("P17"); // Land
 		propertiesForEducationInstitutes.add("P281"); // PLZ
 		propertiesForEducationInstitutes.add("P1329"); // Tel
 		propertiesForEducationInstitutes.add("P856"); // HP-Link
