@@ -26,7 +26,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
@@ -68,12 +72,12 @@ public class Helper {
 	 * it allows for final processing and proper closing to happen without
 	 * having to wait for a whole dump file to process.
 	 * 
-	 * Can be overwritten by custom_properties-file
+	 * Will be overwritten by custom_properties-file
 	 */
 	public static int TIMEOUT_SEC = 100;
 
 	public static int UPDATE_INTERVAL_SEC = 10;
-	public static String LOGFILE_PATH = "C:\\wikidata\\logfiles";
+	public static String LOGFILE_PATH = "C:\\wikidata\\logfiles\\";
 	public static String LOGGING_LEVEL = "INFO";
 	public static int LOGFILE_COUNT = 10;
 	public static String DUMPFILE_PATH = "C:\\wikidata";
@@ -81,8 +85,8 @@ public class Helper {
 	public static String DATABASE_PATH = "localhost";
 	public static String DB_USERNAME = "";
 	public static String DB_PASSWORD = "";
-	public static String SCHEMA = "A";
-	public static String VIEWS_PATH = "";
+	public static String SCHEMA = "a";
+	public static String VIEWS_PATH = "\\views\\";
 	// TODO: When adding a new configuration attribute
 
 	/**
@@ -182,10 +186,10 @@ public class Helper {
 	 * Changes DB-schema in which the programm will write.
 	 */
 	public static void changeSchemaInProgram() {
-		if (SCHEMA.equals("A")) {
-			SCHEMA = "B";
-		} else if (SCHEMA.equals("B")) {
-			SCHEMA = "A";
+		if (SCHEMA.equalsIgnoreCase("a")) {
+			SCHEMA = "b";
+		} else if (SCHEMA.equalsIgnoreCase("b")) {
+			SCHEMA = "a";
 		}
 	}
 
@@ -194,7 +198,7 @@ public class Helper {
 	 * user-application.
 	 */
 	public static void changeSchemaInConfig() {
-		File file = new File("./custom_properties");
+		File file = new File(Main.DB_PROPERTIES_PATH);
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
@@ -215,7 +219,8 @@ public class Helper {
 						property = lineWOwhitespace.split("=")[0];
 
 						if (property.equalsIgnoreCase("SCHEMA")) {
-							newtext += "SCHEMA = " + Helper.SCHEMA + "\n";
+							newtext += "SCHEMA = "
+									+ Helper.SCHEMA.toLowerCase() + "\n";
 						} else {
 							newtext += line + "\n";
 						}
@@ -318,23 +323,45 @@ public class Helper {
 		return true;
 	}
 
-	public static void deleteOldLogfiles(){
+	public static void deleteOldLogfiles() {
 		File logfileFolder = new File(LOGFILE_PATH);
-		File[] logFiles = null;
-		
-		// Array is already sorted by date increasing (oldest comes first)
-		if(logfileFolder != null){
-		logFiles = logfileFolder.listFiles();
+		File[] logFiles = new File[0];
+
+		if (logfileFolder != null) {
+			logFiles = logfileFolder.listFiles();
+
+			if (logFiles == null) {
+				EntityTimerProcessor.logger.warn("No logfiles found.");
+				return;
+			}
 		}
-		
-		if(logFiles == null) {
-			EntityTimerProcessor.logger.warn("No logfiles found.");
-			return;
-		}
-		
-		for(int count = 0; count < (logFiles.length - Helper.LOGFILE_COUNT); count++){
-			
-			// Delete logfile
+
+		// Sort files by extracting and comparing their creation dates
+		Arrays.sort(logFiles, new Comparator<File>() {
+			@Override
+			public int compare(File f1, File f2) {
+				Date n1 = extractDate(f1.getName());
+				Date n2 = extractDate(f2.getName());
+				return n1.compareTo(n2);
+			}
+
+			@SuppressWarnings("deprecation")
+			private Date extractDate(String name) {
+
+				Date d = new Date();
+				d.setYear(Integer.parseInt(name.substring(0, 4)));
+				d.setMonth(Integer.parseInt(name.substring(5, 7)));
+				d.setDate(Integer.parseInt(name.substring(8, 10)));
+				d.setHours(Integer.parseInt(name.substring(11, 13)));
+				d.setMinutes(Integer.parseInt(name.substring(14, 16)));
+				d.setSeconds(Integer.parseInt(name.substring(17, 19)));
+
+				return d;
+
+			}
+		});
+		for (int count = 0; count < (logFiles.length - Helper.LOGFILE_COUNT); count++) {
+
 			logFiles[count].delete();
 		}
 	}

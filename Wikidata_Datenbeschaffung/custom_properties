@@ -2,7 +2,7 @@
 # Logger
 # -----------
 UPDATE_INTERVAL_SEC = 10
-LOGFILE_PATH = C:\wikidata\logfiles
+LOGFILE_PATH = C:\wikidata\logfiles\
 
 # Possible levels: ALL, ERROR, DEBUG, INFO, OFF, FATAL, TRACE, WARN
 LOGGING_LEVEL = ALL
@@ -14,7 +14,7 @@ LOGFILE_COUNT = 10
 # Testing
 # -----------
 OFFLINE_MODE = true
-TIMEOUT_SEC = 10
+TIMEOUT_SEC = 5
 
 # -----------
 # Processing

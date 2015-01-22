@@ -7,7 +7,13 @@ package src;
  * @version 0.1
  */
 public class Main {
+	
+//	public static final String CUSTOM_PROPERTIES_PATH = "/opt/wikidata/config/custom_properties";
+//	public static final String DB_PROPERTIES_PATH = "/opt/wikidata/config/db_properties";
 
+	public static final String CUSTOM_PROPERTIES_PATH = "./custom_properties";
+	public static final String DB_PROPERTIES_PATH = "./db_properties";
+	
 	/**
 	 * Main method. Calls methods to clear database, read data from wikidata,
 	 * parse them and write them to the database.
@@ -20,11 +26,8 @@ public class Main {
 	public static void main(String[] args) {
 
 		// Read properties from config-files
-		 Helper.loadConfiguration("/opt/wikidata/config/custom_properties");
-		 Helper.loadConfiguration("/opt/wikidata/config/db_properties");
-
-//		Helper.loadConfiguration("./custom_properties");
-//		Helper.loadConfiguration("./db_properties");
+		 Helper.loadConfiguration(CUSTOM_PROPERTIES_PATH);
+		 Helper.loadConfiguration(DB_PROPERTIES_PATH);
 
 		// Initialize and configure logging for periodically println of status
 		Helper.configureLogging();
@@ -126,7 +129,7 @@ public class Main {
 		// config-file.
 		// From then, the user application will use the updated schema
 		EntityTimerProcessor.logger
-				.info("Changing value of SCHEMA in config-file ...");
+				.info("Changing value of SCHEMA in config-file to '" + Helper.SCHEMA.toLowerCase() + "' ...");
 		Helper.changeSchemaInConfig();
 
 		EntityTimerProcessor.logger.info("Success! End of program.");
