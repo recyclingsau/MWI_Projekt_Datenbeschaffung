@@ -9,6 +9,8 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import src.EntityTimerProcessor;
+
 /**
  * class WebserviceCall: Calls WebService, reads and stores address information
  * into variables.
@@ -32,15 +34,16 @@ public class WebserviceCall {
 
 	// Calling web service for records.
 
-	public void fetchAdressInfo(String lat, String lon) throws IOException,
-			JSONException {
+	public boolean fetchAdressInfo(String lat, String lon) {
 
 		// Web service with parameters filled.
 		String inquiry = WEBSERVICEURL + "&lat=" + lat + "&lon=" + lon;
 
 		// HTTP connection
 		URL weburl;
-
+		String output = "";
+		String line;
+try{
 		weburl = new URL(inquiry);
 
 		HttpURLConnection conweb = (HttpURLConnection) weburl.openConnection();
@@ -49,15 +52,18 @@ public class WebserviceCall {
 		// Read output
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				conweb.getInputStream()));
-
-		String output = "";
-		String line;
+		
 
 		while ((line = in.readLine()) != null) {
 			output = output + line;
 		}
 		in.close(); // close connection
-
+}
+catch (IOException e){
+	EntityTimerProcessor.logger.error("Error using webservice.");
+	return false;
+}
+ try{
 		// Read JSON objects
 		JSONObject geodata = new JSONObject(output);
 
@@ -79,7 +85,12 @@ public class WebserviceCall {
 		this.zip_code = this.fetchValue("postcode", address);
 		this.country = this.fetchValue("country", address);
 		this.country_code = this.fetchValue("country_code", address);
-
+	}
+ catch (JSONException e){
+	 EntityTimerProcessor.logger.error("Error reading JSON-Object.");
+		return false;
+ }
+ return true;
 	}
 
 	// Wofür?

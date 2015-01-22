@@ -17,16 +17,9 @@ public class Geocoder {
 		// Connect to Database
 		DBCommunicator comm = new DBCommunicator(src.Helper.DATABASE_PATH,src.Helper.SCHEMA,src.Helper.DB_USERNAME,src.Helper.DB_PASSWORD); 
 		
-		try {
-			comm.completeData();
-		} catch (ClassNotFoundException | SQLException | IOException
-				| JSONException e) {
-
-			src.EntityTimerProcessor.logger.error("Error.");
-			return false;
-		}
 		
-		return true;
-
+			boolean success = comm.completeData();
+	
+		return success;
 	}
 }
