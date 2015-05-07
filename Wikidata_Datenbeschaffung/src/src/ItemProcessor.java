@@ -20,6 +20,7 @@ package src;
  * #L%
  */
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,6 +41,7 @@ import org.wikidata.wdtk.datamodel.interfaces.Value;
 import org.wikidata.wdtk.datamodel.interfaces.ValueSnak;
 import org.wikidata.wdtk.datamodel.json.jackson.JacksonValueSnak;
 
+import entities.ClaimValue;
 import entities.Item;
 import entities.WikidataObject;
 
@@ -382,13 +384,15 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		propertiesForEducationInstitutes.add("P669"); // Straße
 		propertiesForEducationInstitutes.add("P670"); // Hausnummer
 		propertiesForEducationInstitutes.add("P969"); // Adresse
-		propertiesForEducationInstitutes.add("P17"); // Land
+		propertiesForEducationInstitutes.add("P17"); // Land -> Eigene Entity
 		propertiesForEducationInstitutes.add("P281"); // PLZ
 		propertiesForEducationInstitutes.add("P1329"); // Tel
 		propertiesForEducationInstitutes.add("P856"); // HP-Link
 		propertiesForEducationInstitutes.add("P854"); // URL
 		propertiesForEducationInstitutes.add("P968"); // E-Mail
 		propertiesForEducationInstitutes.add("P625"); // Geo-Koordinaten
+		propertiesForEducationInstitutes.add("P276"); // Ort
+		
 
 		propertiesForCities.add("P17"); // Staat
 		
@@ -799,8 +803,10 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	private Item convertToItem(ItemDocument itemDoc, String tableName) {
 
 		Iterator<Statement> statementIterator = itemDoc.getAllStatements();
-		HashMap<String, List<String>> claims = new HashMap<String, List<String>>();
-		List<String> valueList;
+		HashMap<String, List<ClaimValue>> claims = new HashMap<String, List<ClaimValue>>();
+		List<ClaimValue> valueList;
+		
+		HashMap<String, String> valueMap = new HashMap<String, String>();
 
 		// Get reference of needed Properties
 		ArrayList<String> refToNeededProperties = neededProperties
@@ -828,7 +834,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			// Check if property is needed in database
 			if (refToNeededProperties.contains(propId)) {
 
-				String value = null;
+				ClaimValue value = null;
 				JacksonValueSnak snak = null;
 
 				// Try to convert value of property to JacksonValue. If it
@@ -839,7 +845,8 @@ public class ItemProcessor implements EntityDocumentProcessor {
 							.getMainSnak();
 
 					value = snak.getDatavalue().accept(
-							new MyValueVisitor<String>());
+							new MyValueVisitor<ClaimValue>());
+				
 
 				} catch (ClassCastException e) {
 					// Value is either unknown or not existent, so value gets
@@ -863,7 +870,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 				valueList = claims.get(propId);
 
 				if (valueList == null) {
-					valueList = new ArrayList<String>();
+					valueList = new ArrayList<ClaimValue>();
 				}
 				valueList.add(value);
 

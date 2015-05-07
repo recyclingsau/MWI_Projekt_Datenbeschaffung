@@ -75,7 +75,7 @@ public class DBCommunicator {
 					+ " MAX(if(property='P669',value,0)) AS Strasse,"
 					+ " MAX(if(property='P670',value,0)) AS Hausnummer,"
 					+ " MAX(if(property='P281',value,0)) AS PLZ,"
-					+ " MAX(if(property='P1134',value,0)) AS Lage_Ort,"
+					+ " MAX(if(property='P276',value,0)) AS Lage_Ort,"
 					+ " MAX(if(property='P969',value,0)) AS Adresse,"
 					+ " MAX(if(property='P625',value,0)) AS Koordinaten "
 					+ " FROM educationinstitutes_claim GROUP by item_id) as t"
@@ -225,7 +225,7 @@ public class DBCommunicator {
 										+ "VALUES ('"
 										+ rs.getString("item_id")
 										+ "', "
-										+ "'P1134',"
+										+ "'P276',"
 										+ max
 										+ ", '"
 										+ webservice.city + "') ;";

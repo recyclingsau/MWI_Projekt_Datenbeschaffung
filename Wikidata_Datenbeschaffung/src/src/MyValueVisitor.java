@@ -1,5 +1,8 @@
 package src;
 
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
+
 import org.wikidata.wdtk.datamodel.interfaces.DatatypeIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.EntityIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
@@ -8,6 +11,9 @@ import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import org.wikidata.wdtk.datamodel.interfaces.ValueVisitor;
+
+import entities.ClaimValue;
+import entities.Item;
 
 /**
  * "Visits" values of claims and reads (and converts) them depending on their
@@ -18,7 +24,7 @@ import org.wikidata.wdtk.datamodel.interfaces.ValueVisitor;
  * 
  * @param <T> 
  */
-public class MyValueVisitor<T> implements ValueVisitor<String> {
+public class MyValueVisitor<T> implements ValueVisitor<ClaimValue> {
 
 	/**
 	 * Visits undefined value
@@ -27,8 +33,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return Always returns "Datatype undefined"
 	 */
 	@Override
-	public String visit(DatatypeIdValue value) {
-		return "Datatype undefined";
+	public ClaimValue visit(DatatypeIdValue value) {
+		return new ClaimValue("", Item.Datatype.UNDEFINED);
 	}
 
 	/**
@@ -38,8 +44,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return ID of the entity as string (with leading Q or P)
 	 */
 	@Override
-	public String visit(EntityIdValue value) {
-		return value.getId();
+	public ClaimValue visit(EntityIdValue value) {
+		return new ClaimValue(value.getId(), Item.Datatype.ENTITY);
 	}
 
 	/**
@@ -49,8 +55,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return String like TODO
 	 */
 	@Override
-	public String visit(GlobeCoordinatesValue value) {
-		return "" + value.getLatitude() + ", " + value.getLongitude();
+	public ClaimValue visit(GlobeCoordinatesValue value) {
+		return new ClaimValue("" + value.getLatitude() + ", " + value.getLongitude(), Item.Datatype.COORDINATES);
 	}
 
 	/**
@@ -60,8 +66,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return Text in certain language as string
 	 */
 	@Override
-	public String visit(MonolingualTextValue value) {
-		return value.getText();
+	public ClaimValue visit(MonolingualTextValue value) {
+		return new ClaimValue(value.getText(), Item.Datatype.STRING);
 	}
 
 	/**
@@ -71,8 +77,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return Numeric value as string
 	 */
 	@Override
-	public String visit(QuantityValue value) {
-		return "" + value.getNumericValue();
+	public ClaimValue visit(QuantityValue value) {
+		return new ClaimValue("" + value.getNumericValue(), Item.Datatype.STRING);
 	}
 
 	/**
@@ -82,8 +88,8 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return Content of StringValue
 	 */
 	@Override
-	public String visit(StringValue value) {
-		return value.getString();
+	public ClaimValue visit(StringValue value) {
+		return new ClaimValue(value.getString(), Item.Datatype.STRING);
 	}
 
 	/**
@@ -93,7 +99,7 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 	 * @return Date like YYYY-MM-DD
 	 */
 	@Override
-	public String visit(TimeValue value) {
+	public ClaimValue visit(TimeValue value) {
 
 		String day = "" + value.getDay();
 		String month = "" + value.getMonth();
@@ -106,6 +112,6 @@ public class MyValueVisitor<T> implements ValueVisitor<String> {
 			month = "0" + month;
 		}
 
-		return year + "-" + month + "-" + day;
+		return new ClaimValue(year + "-" + month + "-" + day, Item.Datatype.TIME);
 	}
 };

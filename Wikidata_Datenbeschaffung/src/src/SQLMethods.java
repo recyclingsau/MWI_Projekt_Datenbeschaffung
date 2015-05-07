@@ -16,7 +16,9 @@ import java.util.Map.Entry;
 import org.wikidata.wdtk.datamodel.interfaces.MonolingualTextValue;
 import org.wikidata.wdtk.datamodel.interfaces.SiteLink;
 
+import entities.ClaimValue;
 import entities.Item;
+import entities.Item.Datatype;
 import entities.WikidataObject;
 
 /**
@@ -281,24 +283,31 @@ public class SQLMethods {
 		// Counter for help key to have unique keys in DB entries
 		HashMap<String, Integer> keyCounter = new HashMap<String, Integer>();
 
+		// Stores all generated Q-IDs to prevent redundant entries in
+		// claims-table
+		ArrayList<String> generatedQIDs = new ArrayList<String>();
+
+		// To check if adding an entry to the claims-table is necessary
+		boolean addClaim = true;
+
 		// Iterate over claims
-		for (Entry<String, List<String>> entry : i.claim.entrySet()) {
+		for (Entry<String, List<ClaimValue>> entry : i.claim.entrySet()) {
 			String key = entry.getKey();
-			Iterator<String> iter = entry.getValue().iterator();
+			Iterator<ClaimValue> iter = entry.getValue().iterator();
 			while (iter.hasNext()) {
 
 				// Get value
-				String value = iter.next();
+				ClaimValue claim = iter.next();
 
 				// Prevent SQL injection
-				if (value != null) {
-					value = value.replaceAll("'", "`");
-					value = value.replaceAll("\"", "`");
-					value = value.replaceAll("\\\\", "");
+				if (claim.value != null) {
+					claim.value = claim.value.replaceAll("'", "`");
+					claim.value = claim.value.replaceAll("\"", "`");
+					claim.value = claim.value.replaceAll("\\\\", "");
 				}
 
 				// Get initial index for help key. We need this one in our DB
-				// because item_id and property_id are no unique key
+				// because item_id and property_id are not unique
 				int newIndex = 0;
 
 				// Try to get index value of current property key
@@ -310,15 +319,73 @@ public class SQLMethods {
 				// Put new index value to keyCounter
 				keyCounter.put(key, newIndex);
 
-				// Create SQL query dynamically
-				String query = "INSERT INTO "
-						+ tableName.toLowerCase()
-						+ "_claim (item_id, property, property_key, value) VALUES('"
-						+ i.id + "', '" + key + "', '" + newIndex + "', '"
-						+ value + "');";
+				// if datatype is String
+				if (claim.type == Datatype.STRING) {
 
-				// Store SQL query
-				queries.add(query);
+					String label_table = "";
+					String label_id = i.id + "_" + key;
+					boolean jump = false;
+
+					// Find name of table to add dummy label and description
+					// value
+					switch (key) {
+					case "P17":
+						label_table = "states";
+						break;
+					case "P276":
+						label_table = "cities";
+						break;
+					case "P106":
+						label_table = "jobs";
+						break;
+					case "P69":
+						label_table = "educationinstitutes";
+						break;
+					default:
+						jump = true;
+						break;
+					// TODO: When adding new entitys, where string values in
+					// claims are possible
+					}
+
+					if (!jump) {
+
+						// Check if combination of Q-ID and P-ID already has an
+						// entry in claim-table.
+						// If so, don't add it there but still add the value in
+						// the
+						// label- and description-tables.
+						if (!generatedQIDs.contains(label_id)) {
+							generatedQIDs.add(label_id);
+						} else {
+							addClaim = false;
+						}
+
+						// Create SQL query dynamically
+						String query = "INSERT INTO " + label_table
+								+ "_label (item_id, language, label) VALUES('"
+								+ label_id + "', 'en', '" + claim.value + "');";
+						// Store SQL query
+						queries.add(query);
+
+						// Value is now the generated label id
+						claim.value = label_id;
+					}
+				}
+
+				if (addClaim) {
+
+					// Create SQL query dynamically
+					String query = "INSERT INTO "
+							+ tableName.toLowerCase()
+							+ "_claim (item_id, property, property_key, value) VALUES('"
+							+ i.id + "', '" + key + "', '" + newIndex + "', '"
+							+ claim.value + "');";
+
+					// Store SQL query
+					queries.add(query);
+
+				}
 			}
 		}
 	}
@@ -621,7 +688,7 @@ public class SQLMethods {
 			String[] queries = query.split(";");
 
 			for (String singleQuery : queries) {
-				
+
 				con.prepareStatement(singleQuery.toLowerCase()).execute();
 			}
 			con.commit();

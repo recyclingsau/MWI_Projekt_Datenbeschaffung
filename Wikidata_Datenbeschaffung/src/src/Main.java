@@ -86,6 +86,7 @@ public class Main {
 		// Items from Wikidata were processed in blocks of a defined amount.
 		// The last blocks (with less entries than the maximum amount per block)
 		// needs to be converted manually
+		EntityTimerProcessor.logger.info("Converting Wikidata-Objects into queries...");
 		processor.convertAllAndCreateSQL();
 
 		EntityTimerProcessor.logger.info("Executing "
