@@ -96,10 +96,11 @@ public class DBCommunicator {
 					// Koordinaten an Komma trennen
 					String[] koordinaten = rs.getString("Koordinaten").split(
 							",");
+
 					koordinaten[0] = koordinaten[0].trim();
 					koordinaten[1] = koordinaten[1].trim();
 
-					// getrennte Geodaten an den Webwervice übergeben,
+					// getrennte Geodaten an den Webservice übergeben,
 
 					boolean success = webservice.fetchAdressInfo(
 							koordinaten[0], koordinaten[1]);
@@ -112,23 +113,19 @@ public class DBCommunicator {
 
 						Statement stmt2 = con.createStatement();
 
-						// letzten Property-Key ermitteln
-						String maxKey = "SELECT property_key FROM educationinstitutes_claim "
-								+ "WHERE item_id = '"
-								+ rs.getString("item_id")
-								+ "' ORDER BY property_key DESC LIMIT 1;";
-
-						ResultSet rs2 = stmt2.executeQuery(maxKey);
-						rs2.next();
-						int max = rs2.getInt("property_key");
-
-						max++;
-
 						// Geo-Daten einzeln mit Property-Key in DB speichern
 
 						if (!webservice.country.equals("")) {
 							if (rs.getString("Land").equals("0")) {
-								String update = "INSERT INTO educationinstitutes_claim"
+
+								// Property-key ermitteln
+								int max = getNewPropertyKey(
+										rs.getString("item_id"), "P17", con);
+
+								String genericQid = rs.getString("item_id")
+										+ "_P17";
+
+								String updateClaims = "INSERT INTO educationinstitutes_claim"
 										+ " (item_id, property, property_key, value)"
 										+ "VALUES ('"
 										+ rs.getString("item_id")
@@ -136,17 +133,31 @@ public class DBCommunicator {
 										+ "'P17',"
 										+ max
 										+ ", '"
-										+ webservice.country + "') ;";
+										+ genericQid + "') ;";
 
-								src.EntityTimerProcessor.logger.debug(update);
+								src.EntityTimerProcessor.logger
+										.debug(updateClaims);
+								con.prepareStatement(updateClaims).execute();
 
-								con.prepareStatement(update).execute();
-								max++;
+								String updateLabel = "INSERT INTO states_label"
+										+ " (item_id, language, label) "
+										+ "VALUES ('" + genericQid
+										+ "', 'EN', '" + webservice.country
+										+ "') ;";
+
+								src.EntityTimerProcessor.logger
+										.debug(updateLabel);
+								con.prepareStatement(updateLabel).execute();
 							}
 						}
 
 						if (!webservice.road.equals("")) {
 							if (rs.getString("Adresse").equals("0")) {
+
+								// Property-key ermitteln
+								int max = getNewPropertyKey(
+										rs.getString("item_id"), "P969", con);
+
 								String update = "INSERT INTO educationinstitutes_claim"
 										+ " (item_id, property, property_key, value)"
 										+ "VALUES ('"
@@ -167,6 +178,11 @@ public class DBCommunicator {
 									.equals("Q")
 									&& Pattern.matches("[0-9]+",
 											rs.getString("Land").split("Q")[1])) {
+
+								// Property-key ermitteln
+								int max = getNewPropertyKey(
+										rs.getString("item_id"), "P969", con);
+
 								String update = "UPDATE educationinstitutes_claim SET "
 										+ "value= "
 										+ webservice.road
@@ -180,12 +196,16 @@ public class DBCommunicator {
 								src.EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
-								max++;
 							}
 						}
 
 						if (!webservice.zip_code.equals("")) {
 							if (rs.getString("PLZ").equals("0")) {
+
+								// Property-key ermitteln
+								int max = getNewPropertyKey(
+										rs.getString("item_id"), "P281", con);
+
 								String update = "INSERT INTO educationinstitutes_claim"
 										+ " (item_id, property, property_key, value)"
 										+ "VALUES ('"
@@ -199,11 +219,11 @@ public class DBCommunicator {
 								src.EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
-								max++;
 							} else if (rs.getString("PLZ").substring(0, 1)
 									.equals("Q")
 									&& Pattern.matches("[0-9]+",
 											rs.getString("Land").split("Q")[1])) {
+
 								String update = "UPDATE educationinstitutes_claim SET "
 										+ "value= "
 										+ webservice.zip_code
@@ -215,12 +235,19 @@ public class DBCommunicator {
 								src.EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
-								max++;
 							}
 						}
 						if (!webservice.city.equals("")) {
 							if (rs.getString("Lage_Ort").equals("0")) {
-								String update = "INSERT INTO educationinstitutes_claim"
+
+								String genericQid = rs.getString("item_id")
+										+ "_P276";
+
+								// Property-key ermitteln
+								int max = getNewPropertyKey(
+										rs.getString("item_id"), "P276", con);
+
+								String updateClaims = "INSERT INTO educationinstitutes_claim"
 										+ " (item_id, property, property_key, value)"
 										+ "VALUES ('"
 										+ rs.getString("item_id")
@@ -228,12 +255,20 @@ public class DBCommunicator {
 										+ "'P276',"
 										+ max
 										+ ", '"
-										+ webservice.city + "') ;";
+										+ genericQid + "') ;";
 
-								src.EntityTimerProcessor.logger.debug(update);
+								src.EntityTimerProcessor.logger
+										.debug(updateClaims);
+								con.prepareStatement(updateClaims).execute();
 
-								con.prepareStatement(update).execute();
-								max++;
+								String updateLabel = "INSERT INTO cities_label"
+										+ " (item_id, language, label) "
+										+ "VALUES ('" + genericQid
+										+ "', 'EN', '" + webservice.city + "') ;";
+
+								src.EntityTimerProcessor.logger
+										.debug(updateLabel);
+								con.prepareStatement(updateLabel).execute();
 							}
 						}
 
@@ -254,6 +289,29 @@ public class DBCommunicator {
 			return false;
 		}
 		return true;
+	}
+
+	private int getNewPropertyKey(String item_id, String property_id,
+			Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		int max = 0;
+
+		// letzten Property-Key ermitteln
+		String query = "SELECT MAX(property_key) as property_key FROM educationinstitutes_claim "
+				+ "WHERE item_id = '"
+				+ item_id
+				+ "' AND property = '"
+				+ property_id + "';";
+
+		ResultSet rs = stmt.executeQuery(query);
+		if (rs.first()) {
+
+			max = rs.getInt("property_key");
+		}
+
+		stmt.close();
+
+		return (max + 1);
 	}
 
 }

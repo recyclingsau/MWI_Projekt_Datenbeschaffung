@@ -308,7 +308,7 @@ public class SQLMethods {
 
 				// Get initial index for help key. We need this one in our DB
 				// because item_id and property_id are not unique
-				int newIndex = 0;
+				int newIndex = 1;
 
 				// Try to get index value of current property key
 				if (keyCounter.get(key) != null) {
@@ -473,7 +473,7 @@ public class SQLMethods {
 
 			// Get initial index for help key. We need this one in out DB
 			// because item_id and language are no unique key
-			int newIndex = 0;
+			int newIndex = 1;
 
 			// Iterate over all aliases with current language
 			for (MonolingualTextValue textValue : entry.getValue()) {
