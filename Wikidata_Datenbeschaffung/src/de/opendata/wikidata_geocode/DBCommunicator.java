@@ -106,13 +106,7 @@ public class DBCommunicator {
 							koordinaten[0], koordinaten[1]);
 					if (success) {
 
-						// 2. DB Verbindung für das Einfügen der Daten
-						// Connection con2;
-						// con2 = DriverManager.getConnection(url, user,
-						// password);
-
-						Statement stmt2 = con.createStatement();
-
+	
 						// Geo-Daten einzeln mit Property-Key in DB speichern
 
 						if (!webservice.country.equals("")) {
@@ -174,10 +168,7 @@ public class DBCommunicator {
 
 								con.prepareStatement(update).execute();
 								max++;
-							} else if (rs.getString("Adresse").substring(0, 1)
-									.equals("Q")
-									&& Pattern.matches("[0-9]+",
-											rs.getString("Land").split("Q")[1])) {
+							} else if (isQid(rs.getString("Adresse"))) {
 
 								// Property-key ermitteln
 								int max = getNewPropertyKey(
@@ -219,10 +210,7 @@ public class DBCommunicator {
 								src.EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
-							} else if (rs.getString("PLZ").substring(0, 1)
-									.equals("Q")
-									&& Pattern.matches("[0-9]+",
-											rs.getString("Land").split("Q")[1])) {
+							} else if (isQid(rs.getString("PLZ"))) {
 
 								String update = "UPDATE educationinstitutes_claim SET "
 										+ "value= "
@@ -312,6 +300,11 @@ public class DBCommunicator {
 		stmt.close();
 
 		return (max + 1);
+	}
+	
+	private boolean isQid(String value){
+		return (value.substring(0, 1).equals("Q")
+				&& Pattern.matches("[0-9]+",value.split("Q")[1]));
 	}
 
 }
