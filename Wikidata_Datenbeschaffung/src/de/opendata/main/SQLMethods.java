@@ -1,4 +1,4 @@
-package src;
+package de.opendata.main;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,10 +16,10 @@ import java.util.Map.Entry;
 import org.wikidata.wdtk.datamodel.interfaces.MonolingualTextValue;
 import org.wikidata.wdtk.datamodel.interfaces.SiteLink;
 
-import entities.ClaimValue;
-import entities.Item;
-import entities.Item.Datatype;
-import entities.WikidataObject;
+import de.opendata.entities.ClaimValue;
+import de.opendata.entities.Item;
+import de.opendata.entities.Item.Datatype;
+import de.opendata.entities.WikidataObject;
 
 /**
  * Class containing all methods to communicate with MySQL-Database
@@ -131,9 +131,7 @@ public class SQLMethods {
 				String label = obj.label.get(language).getText();
 
 				// Prevent SQL injection
-				label = label.replaceAll("'", "`");
-				label = label.replaceAll("\"", "`");
-				label = label.replaceAll("\\\\", "");
+				label = preventSQLinjection(label, false);
 
 				String desc = "";
 
@@ -149,9 +147,7 @@ public class SQLMethods {
 					desc = obj.desc.remove(language).getText();
 
 					// Prevent SQL injection
-					desc = desc.replaceAll("'", "`");
-					desc = desc.replaceAll("\"", "`");
-					desc = desc.replaceAll("\\\\", "");
+					desc = preventSQLinjection(desc, false);
 
 				} catch (Exception e) {
 					// No description in this language found. No further
@@ -182,9 +178,7 @@ public class SQLMethods {
 				String description = obj.desc.get(language).getText();
 
 				// Prevent SQL injection
-				description = description.replaceAll("'", "`");
-				description = description.replaceAll("\"", "`");
-				description = description.replaceAll("\\\\", "");
+				description = preventSQLinjection(description, false);
 
 				String label = "";
 
@@ -298,94 +292,101 @@ public class SQLMethods {
 
 				// Get value
 				ClaimValue claim = iter.next();
+				if (claim != null) {
 
-				// Prevent SQL injection
-				if (claim.value != null) {
-					claim.value = claim.value.replaceAll("'", "`");
-					claim.value = claim.value.replaceAll("\"", "`");
-					claim.value = claim.value.replaceAll("\\\\", "");
-				}
-
-				// Get initial index for help key. We need this one in our DB
-				// because item_id and property_id are not unique
-				int newIndex = 1;
-
-				// Try to get index value of current property key
-				if (keyCounter.get(key) != null) {
-					// Add 1 to index value
-					newIndex = keyCounter.get(key) + 1;
-				}
-
-				// Put new index value to keyCounter
-				keyCounter.put(key, newIndex);
-
-				// if datatype is String
-				if (claim.type == Datatype.STRING) {
-
-					String label_table = "";
-					String label_id = i.id + "_" + key;
-					boolean jump = false;
-
-					// Find name of table to add dummy label and description
-					// value
-					switch (key) {
-					case "P17":
-						label_table = "states";
-						break;
-					case "P276":
-						label_table = "cities";
-						break;
-					case "P106":
-						label_table = "jobs";
-						break;
-					case "P69":
-						label_table = "educationinstitutes";
-						break;
-					default:
-						jump = true;
-						break;
-					// TODO: When adding new entitys, where string values in
-					// claims are possible
+					// Prevent SQL injection
+					if (claim.value != null) {
+						claim.value = preventSQLinjection(claim.value, false);
 					}
 
-					if (!jump) {
+					// Get initial index for help key. We need this one in our
+					// DB
+					// because item_id and property_id are not unique
+					int newIndex = 1;
 
-						// Check if combination of Q-ID and P-ID already has an
-						// entry in claim-table.
-						// If so, don't add it there but still add the value in
-						// the
-						// label- and description-tables.
-						if (!generatedQIDs.contains(label_id)) {
-							generatedQIDs.add(label_id);
-						} else {
-							addClaim = false;
+					// Try to get index value of current property key
+					if (keyCounter.get(key) != null) {
+						// Add 1 to index value
+						newIndex = keyCounter.get(key) + 1;
+					}
+
+					// Put new index value to keyCounter
+					keyCounter.put(key, newIndex);
+
+					// if datatype is String
+					if (claim.type == Datatype.STRING) {
+
+						String label_table = "";
+						String label_id = i.id + "_" + key;
+						boolean jump = false;
+
+						// Find name of table to add dummy label and description
+						// value
+						switch (key) {
+						case "P17":
+							label_table = "states";
+							break;
+						case "P276":
+							label_table = "cities";
+							break;
+						case "P106":
+							label_table = "jobs";
+							break;
+						case "P69":
+							label_table = "educationinstitutes";
+							break;
+						default:
+							jump = true;
+							break;
+						// TODO: When adding new entitys, where string values in
+						// claims are possible
 						}
 
+						if (!jump) {
+
+							// Check if combination of Q-ID and P-ID already has
+							// an
+							// entry in claim-table.
+							// If so, don't add it there but still add the value
+							// in
+							// the
+							// label- and description-tables.
+							if (!generatedQIDs.contains(label_id)) {
+								generatedQIDs.add(label_id);
+							} else {
+								addClaim = false;
+							}
+
+							// Create SQL query dynamically
+							String query = "INSERT INTO "
+									+ label_table
+									+ "_label (item_id, language, label) VALUES('"
+									+ label_id + "', 'en', '" + claim.value
+									+ "');";
+							// Store SQL query
+							queries.add(query);
+
+							// Value is now the generated label id
+							claim.value = label_id;
+						}
+					}
+
+					if (addClaim) {
+
 						// Create SQL query dynamically
-						String query = "INSERT INTO " + label_table
-								+ "_label (item_id, language, label) VALUES('"
-								+ label_id + "', 'en', '" + claim.value + "');";
+						String query = "INSERT INTO "
+								+ tableName.toLowerCase()
+								+ "_claim (item_id, property, property_key, value) VALUES('"
+								+ i.id + "', '" + key + "', '" + newIndex
+								+ "', '" + claim.value + "');";
+
 						// Store SQL query
 						queries.add(query);
 
-						// Value is now the generated label id
-						claim.value = label_id;
 					}
-				}
-
-				if (addClaim) {
-
-					// Create SQL query dynamically
-					String query = "INSERT INTO "
-							+ tableName.toLowerCase()
-							+ "_claim (item_id, property, property_key, value) VALUES('"
-							+ i.id + "', '" + key + "', '" + newIndex + "', '"
-							+ claim.value + "');";
-
-					// Store SQL query
-					queries.add(query);
-
-				}
+				} else
+					EntityTimerProcessor.logger.warn("Entität " + i.id
+							+ " besitzt null-Claim.");
 			}
 		}
 	}
@@ -426,9 +427,7 @@ public class SQLMethods {
 			String value = entry.getValue().getText();
 
 			// Prevent SQL injection
-			value = value.replaceAll("'", "`");
-			value = value.replaceAll("\"", "`");
-			value = value.replaceAll("\\\\", "");
+			value = preventSQLinjection(value, false);
 
 			// Create SQL query dynamically
 			String query = "INSERT INTO " + tableName.toLowerCase() + "_"
@@ -482,9 +481,7 @@ public class SQLMethods {
 				value = textValue.getText();
 
 				// Prevent SQL injection
-				value = value.replaceAll("'", "`");
-				value = value.replaceAll("\"", "``");
-				value = value.replaceAll("\\\\", "");
+				value = preventSQLinjection(value, false);
 
 				// Try to get index value of current language key
 				if (keyCounter.get(key) != null) {
@@ -548,9 +545,7 @@ public class SQLMethods {
 			String group = Helper.sites.getGroup(key);
 
 			// Prevents SQL injection
-			url = url.replaceAll("'", "%27");
-			url = url.replaceAll("\"", "%22");
-			url = url.replaceAll("\\\\", "");
+			url = preventSQLinjection(url, true);
 
 			// Create SQL query dynamically
 			String query = "INSERT INTO " + tableName.toLowerCase()
@@ -580,37 +575,43 @@ public class SQLMethods {
 				// Print query
 				EntityTimerProcessor.logger.debug(query);
 
-				// Create and execute statement
-				Statement stmt = con.createStatement();
-				stmt.executeUpdate(query);
-				stmt.close();
+				try {
+					// Create and execute statement
+					Statement stmt = con.createStatement();
+					stmt.executeUpdate(query);
+					stmt.close();
+					if (Helper.COMMIT_MODE.equals("SINGLE")) {
+						con.commit();
+					}
+				} catch (SQLException e) {
+					EntityTimerProcessor.logger.error(e.getMessage());
+					if (Helper.COMMIT_MODE.equals("SINGLE")) {
+						EntityTimerProcessor.logger.info("Commit mode is SINGLE. Trying to rollback single false query: " + query + "...");
+					}
+					else {
+						EntityTimerProcessor.logger.info("Commit mode is ALL. Trying to rollback all queries...");
+					}
+							
+					try {
+						// Rollback work to keep DB integrity
+						con.rollback();
+
+					} catch (SQLException e1) {
+						// Rollback was not successful.
+						// Maybe connection is lost. In this case, DBMS should
+						// rollback by itself
+						EntityTimerProcessor.logger
+								.error("Rollback not successful. Please check data integrity of DB!");
+					}
+				}
 			}
-
-			con.commit();
-
-			return true;
-
-		} catch (SQLException e) {
-			EntityTimerProcessor.logger.error(e.getMessage());
-			EntityTimerProcessor.logger.info("Trying to rollback work...");
-
-			try {
-				// Rollback everything at error
-				con.rollback();
-
-			} catch (SQLException e1) {
-				// Rollback was not successful.
-				// Maybe connection is lost. In this case, DBMS should rollback
-				// by itself
-				EntityTimerProcessor.logger
-						.error("Rollback not successful. Please check data integrity of DB!");
-				return false;
-			}
-			return false;
-
 		} finally {
 			if (con != null) {
 				try {
+
+					if (Helper.COMMIT_MODE.equals("ALL")) {
+						con.commit();
+					}
 					// Close connection
 					con.close();
 				} catch (SQLException e) {
@@ -619,8 +620,13 @@ public class SQLMethods {
 				}
 			}
 		}
+		// This method always returns true by now.
+		return true;
 	}
 
+	/**
+	 * Refresh all Views in Database
+	 */
 	protected static void refreshViews() {
 
 		EntityTimerProcessor.logger
@@ -658,6 +664,12 @@ public class SQLMethods {
 
 	}
 
+	/**
+	 * Refresh view in DB by reading and executing a .sql-File
+	 * 
+	 * @param nameOfViewFile
+	 * 			name of .sql-File in view-folder (without ".sql")
+	 */
 	private static boolean refreshSingleView(String nameOfViewFile) {
 
 		String query = "";
@@ -719,6 +731,28 @@ public class SQLMethods {
 
 		return true;
 
+	}
+	
+	/**
+	 * Remove SQL-Injection-letters from texts
+	 * 
+	 * @param nameOfViewFile
+	 * 			name of .sql-File in view-folder (without ".sql")
+	 */
+	public static String preventSQLinjection(String raw, boolean isUrl){
+		if(isUrl) {
+			raw = raw.replaceAll("'", "%27");
+			raw = raw.replaceAll("\"", "%22");
+		}
+		else {
+			raw = raw.replaceAll("'", "`");
+			raw = raw.replaceAll("\"", "``");
+		}
+		
+		raw = raw.replaceAll("\\\\", "");
+		raw = raw.replaceAll(";", ",");	
+		
+		return raw;
 	}
 
 }

@@ -1,4 +1,4 @@
-package src;
+package de.opendata.main;
 
 /**
  * Main class to contain main mehthod
@@ -40,8 +40,7 @@ public class Main {
 		if (SQLMethods.openSQLconnection() == null) {
 			EntityTimerProcessor.logger.info("End of program.");
 			return;
-		}
-		;
+		};
 
 		// Change schema which will be updated now
 		Helper.changeSchemaInProgram();
@@ -107,7 +106,7 @@ public class Main {
 		EntityTimerProcessor.logger
 				.info("Begin of data transformation and cleansing...");
 
-		successful = de.opendata.wikidata_geocode.Geocoder.runGeocoder();
+		successful = de.opendata.geocode.Geocoder.runGeocoder();
 
 		// If error occured, end program
 		if (successful) {

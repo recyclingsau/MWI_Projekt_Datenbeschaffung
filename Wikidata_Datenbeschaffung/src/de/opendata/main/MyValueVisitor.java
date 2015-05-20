@@ -1,7 +1,4 @@
-package src;
-
-import java.util.List;
-import java.util.AbstractMap.SimpleEntry;
+package de.opendata.main;
 
 import org.wikidata.wdtk.datamodel.interfaces.DatatypeIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.EntityIdValue;
@@ -12,8 +9,8 @@ import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import org.wikidata.wdtk.datamodel.interfaces.ValueVisitor;
 
-import entities.ClaimValue;
-import entities.Item;
+import de.opendata.entities.ClaimValue;
+import de.opendata.entities.Item;
 
 /**
  * "Visits" values of claims and reads (and converts) them depending on their

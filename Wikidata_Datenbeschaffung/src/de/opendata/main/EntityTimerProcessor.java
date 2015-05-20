@@ -1,4 +1,4 @@
-package src;
+package de.opendata.main;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package src;
+package de.opendata.main;
 
 /*
  * #%L
@@ -20,7 +20,6 @@ package src;
  * #L%
  */
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,9 +40,9 @@ import org.wikidata.wdtk.datamodel.interfaces.Value;
 import org.wikidata.wdtk.datamodel.interfaces.ValueSnak;
 import org.wikidata.wdtk.datamodel.json.jackson.JacksonValueSnak;
 
-import entities.ClaimValue;
-import entities.Item;
-import entities.WikidataObject;
+import de.opendata.entities.ClaimValue;
+import de.opendata.entities.Item;
+import de.opendata.entities.WikidataObject;
 
 /**
  * Implementation of a
@@ -443,6 +442,11 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		case "Q2385804": // Educational institution
 		case "Q508719": // Alumni
 		case "Q319608": // Address
+		case "Q29485": // Error
+		case "Q829624": // Beschreibung
+		case "Q4668607": // Über uns
+		case "Q1075810": // Impressum
+		case "Q2333935": // Statistik
 			// TODO: Bei Einfügen neuer GUI-Texte mit Q-ID
 			guiTextsCount++;
 			guiElements.add(itemDocument);
@@ -560,7 +564,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 			// TODO: Bei Einfügen neuer Items
 
 			// Clear lists to free memory
-			persons.clear();
+			persons.clear(); // "Master has given a sock. Dobby is free"
 			jobs.clear();
 			educationInstitutes.clear();
 			cities.clear();
@@ -806,8 +810,6 @@ public class ItemProcessor implements EntityDocumentProcessor {
 		HashMap<String, List<ClaimValue>> claims = new HashMap<String, List<ClaimValue>>();
 		List<ClaimValue> valueList;
 		
-		HashMap<String, String> valueMap = new HashMap<String, String>();
-
 		// Get reference of needed Properties
 		ArrayList<String> refToNeededProperties = neededProperties
 				.get(tableName);
@@ -838,8 +840,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 				JacksonValueSnak snak = null;
 
 				// Try to convert value of property to JacksonValue. If it
-				// fails, it
-				// has no or an unknown value
+				// fails, it has no or an unknown value
 				try {
 					snak = (JacksonValueSnak) statement.getClaim()
 							.getMainSnak();
@@ -857,11 +858,13 @@ public class ItemProcessor implements EntityDocumentProcessor {
 					// Optional: Possibility to decide between no and unknown
 					// value:
 					/*
-					 * try { // Try casting value to "No value" // If cast is
-					 * successful, write "Kein Wert" to value JacksonNoValueSnak
-					 * noValSnak = (JacksonNoValueSnak) statement
-					 * .getClaim().getMainSnak(); value = "Kein Wert"; } catch
-					 * (ClassCastException e1) { value = "Unbekannter Wert"; }
+					 * try { 
+					 * // Try casting value to "No value" 
+					 * // If cast is successful, write "Kein Wert" to value JacksonNoValueSnak
+					 * noValSnak = (JacksonNoValueSnak) statement.getClaim().getMainSnak(); 
+					 * value = "Kein Wert"; } 
+					 * catch (ClassCastException e1) 
+					 * { value = "Unbekannter Wert"; }
 					 */
 				}
 

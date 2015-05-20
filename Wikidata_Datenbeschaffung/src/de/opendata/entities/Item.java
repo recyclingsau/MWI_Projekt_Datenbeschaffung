@@ -1,4 +1,4 @@
-package entities;
+package de.opendata.entities;
 
 import java.util.HashMap;
 import java.util.List;

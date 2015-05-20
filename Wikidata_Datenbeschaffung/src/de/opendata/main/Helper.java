@@ -1,4 +1,4 @@
-package src;
+package de.opendata.main;
 
 /*
  * #%L
@@ -26,7 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -41,7 +40,7 @@ import org.wikidata.wdtk.datamodel.interfaces.EntityDocumentProcessor;
 import org.wikidata.wdtk.datamodel.interfaces.Sites;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 
-import src.EntityTimerProcessor.TimeoutException;
+import de.opendata.main.EntityTimerProcessor.TimeoutException;
 
 /**
  * Hilfsklasse zum lesen statischer Konfigurationsvariablen und Logging-Methoden
@@ -87,6 +86,7 @@ public class Helper {
 	public static String DB_PASSWORD = "";
 	public static String SCHEMA = "a";
 	public static String VIEWS_PATH = "\\views\\";
+	public static String COMMIT_MODE = "SINGLE"; // SINGLE or ALL
 	// TODO: When adding a new configuration attribute
 
 	/**

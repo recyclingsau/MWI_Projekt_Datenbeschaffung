@@ -1,4 +1,4 @@
-package src;
+package de.opendata.main;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,6 +92,8 @@ public class ConfigScanner {
 				break;
 			case "VIEWS_PATH":
 				Helper.VIEWS_PATH = value;
+			case "COMMIT_MODE":
+				Helper.COMMIT_MODE = value;
 			// TODO: When adding a new configuration attribute
 			}
 

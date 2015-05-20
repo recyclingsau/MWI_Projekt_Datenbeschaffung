@@ -1,6 +1,5 @@
-package de.opendata.wikidata_geocode;
+package de.opendata.geocode;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,15 +7,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Pattern;
 
-import org.json.JSONException;
-
-import src.EntityTimerProcessor;
+import de.opendata.main.EntityTimerProcessor;
 
 /**
  * class DBCommunicator
  * 
  * @author Anna Drützler
- * @version 1.0
+ * @author Marco Kinkel
+ * @version 0.1
  * */
 
 public class DBCommunicator {
@@ -42,8 +40,10 @@ public class DBCommunicator {
 	}
 
 	/**
-	 * Vervollständigen der Geo-Daten in wikidata SQL-Datenbank
+	 * Complete geo-data in wikidata SQL-DB
 	 * 
+	 * @author Anna Drützler
+	 * @author Marco Kinkel
 	 * **/
 	public boolean completeData() {
 		String driver = "com.mysql.jdbc.Driver";
@@ -84,35 +84,33 @@ public class DBCommunicator {
 
 			rs = stmt.executeQuery(anfrage);
 
-			// Vorbereitung Webservice (empty constructor)
+			// Prepare webservice (empty constructor)
 			webservice = new WebserviceCall();
 
 			if (rs != null && webservice != null) {
 
-				// Jeden Datensatz durchgehen
-
 				while (rs.next()) {
 
-					// Koordinaten an Komma trennen
+					// Split coordinates
 					String[] koordinaten = rs.getString("Koordinaten").split(
 							",");
 
 					koordinaten[0] = koordinaten[0].trim();
 					koordinaten[1] = koordinaten[1].trim();
 
-					// getrennte Geodaten an den Webservice übergeben,
+					// Call webservice using geo-coordinates
 
 					boolean success = webservice.fetchAdressInfo(
 							koordinaten[0], koordinaten[1]);
 					if (success) {
 
 	
-						// Geo-Daten einzeln mit Property-Key in DB speichern
+						// Store geo-data for property-key in db
 
 						if (!webservice.country.equals("")) {
 							if (rs.getString("Land").equals("0")) {
 
-								// Property-key ermitteln
+								// Get new property-key
 								int max = getNewPropertyKey(
 										rs.getString("item_id"), "P17", con);
 
@@ -129,7 +127,7 @@ public class DBCommunicator {
 										+ ", '"
 										+ genericQid + "') ;";
 
-								src.EntityTimerProcessor.logger
+								EntityTimerProcessor.logger
 										.debug(updateClaims);
 								con.prepareStatement(updateClaims).execute();
 
@@ -139,7 +137,7 @@ public class DBCommunicator {
 										+ "', 'EN', '" + webservice.country
 										+ "') ;";
 
-								src.EntityTimerProcessor.logger
+								EntityTimerProcessor.logger
 										.debug(updateLabel);
 								con.prepareStatement(updateLabel).execute();
 							}
@@ -148,7 +146,7 @@ public class DBCommunicator {
 						if (!webservice.road.equals("")) {
 							if (rs.getString("Adresse").equals("0")) {
 
-								// Property-key ermitteln
+								// Get new property-key
 								int max = getNewPropertyKey(
 										rs.getString("item_id"), "P969", con);
 
@@ -164,15 +162,13 @@ public class DBCommunicator {
 										+ " "
 										+ webservice.house_number + "') ;";
 
-								src.EntityTimerProcessor.logger.debug(update);
+								EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
 								max++;
 							} else if (isQid(rs.getString("Adresse"))) {
 
-								// Property-key ermitteln
-								int max = getNewPropertyKey(
-										rs.getString("item_id"), "P969", con);
+								// Get new property-key
 
 								String update = "UPDATE educationinstitutes_claim SET "
 										+ "value= "
@@ -184,7 +180,7 @@ public class DBCommunicator {
 										+ " AND property = 'P969' AND property_key= "
 										+ rs.getString("property_key") + ";";
 
-								src.EntityTimerProcessor.logger.debug(update);
+								EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
 							}
@@ -207,7 +203,7 @@ public class DBCommunicator {
 										+ ", '"
 										+ webservice.zip_code + "') ;";
 
-								src.EntityTimerProcessor.logger.debug(update);
+								EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
 							} else if (isQid(rs.getString("PLZ"))) {
@@ -220,7 +216,7 @@ public class DBCommunicator {
 										+ " AND property = 'P281' AND property_key= "
 										+ rs.getString("property_key") + ";";
 
-								src.EntityTimerProcessor.logger.debug(update);
+								EntityTimerProcessor.logger.debug(update);
 
 								con.prepareStatement(update).execute();
 							}
@@ -231,7 +227,7 @@ public class DBCommunicator {
 								String genericQid = rs.getString("item_id")
 										+ "_P276";
 
-								// Property-key ermitteln
+								// Get new property-key
 								int max = getNewPropertyKey(
 										rs.getString("item_id"), "P276", con);
 
@@ -245,7 +241,7 @@ public class DBCommunicator {
 										+ ", '"
 										+ genericQid + "') ;";
 
-								src.EntityTimerProcessor.logger
+								EntityTimerProcessor.logger
 										.debug(updateClaims);
 								con.prepareStatement(updateClaims).execute();
 
@@ -254,7 +250,7 @@ public class DBCommunicator {
 										+ "VALUES ('" + genericQid
 										+ "', 'EN', '" + webservice.city + "') ;";
 
-								src.EntityTimerProcessor.logger
+								EntityTimerProcessor.logger
 										.debug(updateLabel);
 								con.prepareStatement(updateLabel).execute();
 							}
@@ -279,12 +275,27 @@ public class DBCommunicator {
 		return true;
 	}
 
+	
+	/**
+	 * Get help-key for update in claims-table
+	 * 
+	 * @param item_id
+	 * 				ID of affected item
+	 * @param property_id
+	 * 				ID of affected property
+	 * @param con
+	 * 				DB-Connection
+	 * 
+	 * @return New help-key
+	 * 
+	 * @author Marco Kinkel
+	 **/
 	private int getNewPropertyKey(String item_id, String property_id,
 			Connection con) throws SQLException {
 		Statement stmt = con.createStatement();
 		int max = 0;
 
-		// letzten Property-Key ermitteln
+		// get last property-key
 		String query = "SELECT MAX(property_key) as property_key FROM educationinstitutes_claim "
 				+ "WHERE item_id = '"
 				+ item_id
@@ -302,6 +313,17 @@ public class DBCommunicator {
 		return (max + 1);
 	}
 	
+	
+	/**
+	 * Check if given value is a Q-ID (e.g. Q12345)
+	 * 
+	 * @param value
+	 * 				Value of claims-table to be checked
+	 * 
+	 * @return True if value is Q-ID
+	 * 
+	 * @author Marco Kinkel
+	 **/
 	private boolean isQid(String value){
 		return (value.substring(0, 1).equals("Q")
 				&& Pattern.matches("[0-9]+",value.split("Q")[1]));

@@ -1,4 +1,4 @@
-package entities;
+package de.opendata.entities;
 
 /**
  * Representation of a claim value of wikidata properties

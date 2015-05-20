@@ -1,15 +1,17 @@
-package de.opendata.wikidata_geocode;
+package de.opendata.geocode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import src.EntityTimerProcessor;
+import de.opendata.main.EntityTimerProcessor;
+import de.opendata.main.SQLMethods;
 
 /**
  * class WebserviceCall: Calls WebService, reads and stores address information
@@ -51,13 +53,13 @@ public class WebserviceCall {
 			conweb.setRequestMethod("GET");
 
 			// Read output
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					conweb.getInputStream()));
-
-			while ((line = in.readLine()) != null) {
-				output = output + line;
-			}
-			in.close(); // close connection
+			 BufferedReader in = new BufferedReader(new InputStreamReader(
+			 conweb.getInputStream(), StandardCharsets.UTF_8));
+			
+			 while ((line = in.readLine()) != null) {
+			 output = output + line;
+			 }
+			 in.close(); // close connection
 		} catch (IOException e) {
 			EntityTimerProcessor.logger.error("Error using webservice.");
 			return false;
@@ -91,15 +93,14 @@ public class WebserviceCall {
 		return true;
 	}
 
-	// Wofür?
+	//
 	private String fetchValue(String key, JSONObject o) throws JSONException {
 		String ret;
 		if (o.has(key)) {
 			ret = o.getString(key);
 
 			// Prevent SQL injection
-			ret = ret.replaceAll("'", "`");
-			ret = ret.replaceAll("\"", "`");
+			ret = SQLMethods.preventSQLinjection(ret, false);
 		} else {
 			ret = "";
 		}

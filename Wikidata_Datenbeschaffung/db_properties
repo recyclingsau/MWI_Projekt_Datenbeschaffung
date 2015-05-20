@@ -6,4 +6,5 @@ DATABASE_PATH = localhost/wikidata
 DB_USERNAME = root
 DB_PASSWORD = hase
 # this is the schema used by the user-application. Data updates go into the other schema
-SCHEMA = a
+SCHEMA = b
+COMMIT_MODE = ALL
