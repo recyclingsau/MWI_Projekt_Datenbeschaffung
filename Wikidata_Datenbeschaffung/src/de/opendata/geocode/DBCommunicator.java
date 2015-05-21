@@ -168,8 +168,6 @@ public class DBCommunicator {
 								max++;
 							} else if (isQid(rs.getString("Adresse"))) {
 
-								// Get new property-key
-
 								String update = "UPDATE educationinstitutes_claim SET "
 										+ "value= "
 										+ webservice.road
@@ -189,7 +187,7 @@ public class DBCommunicator {
 						if (!webservice.zip_code.equals("")) {
 							if (rs.getString("PLZ").equals("0")) {
 
-								// Property-key ermitteln
+								// Get new property-key
 								int max = getNewPropertyKey(
 										rs.getString("item_id"), "P281", con);
 
