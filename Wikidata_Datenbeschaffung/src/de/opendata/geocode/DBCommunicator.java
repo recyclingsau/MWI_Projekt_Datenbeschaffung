@@ -44,8 +44,7 @@ public class DBCommunicator {
 	 * 
 	 * @return Returns true if successful
 	 * 
-	 * @author Anna Drützler
-	 * @author Marco Kinkel
+	 * by Anna Drützler and Marco Kinkel
 	 * **/
 	public boolean completeData() {
 		String driver = "com.mysql.jdbc.Driver";

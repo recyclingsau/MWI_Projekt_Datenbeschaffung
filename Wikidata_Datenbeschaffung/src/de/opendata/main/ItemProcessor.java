@@ -415,7 +415,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	 * @param itemDocument
 	 *            Current entity to be read, filtered and stored
 	 * 
-	 * @author Marco Kinkel
+	 * by Marco Kinkel
 	 */
 	@Override
 	public void processItemDocument(ItemDocument itemDocument) {
@@ -586,7 +586,7 @@ public class ItemProcessor implements EntityDocumentProcessor {
 	 * @param propertyDocument
 	 *            Current property to be read and stored
 	 * 
-	 * @author Marco Kinkel
+	 * by Marco Kinkel
 	 */
 	@Override
 	public void processPropertyDocument(PropertyDocument propertyDocument) {

@@ -21,7 +21,7 @@ public class Main {
 	 * @param args
 	 *            Argumente werden nicht verarbeitet
 	 * 
-	 * @author Marco Kinkel
+	 * by Marco Kinkel
 	 */
 	public static void main(String[] args) {
 

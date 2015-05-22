@@ -21,8 +21,10 @@ public class ConfigScanner {
 	/**
 	 * Constructor.
 	 * 
-	 * @param aFileName
+	 * @param fileName
 	 *            full name of an existing, readable file.
+	 * @throws FileNotFoundException
+	 * 				if file of filename is not found
 	 */
 	public ConfigScanner(String fileName) throws FileNotFoundException {
 		filePath = new File(fileName);

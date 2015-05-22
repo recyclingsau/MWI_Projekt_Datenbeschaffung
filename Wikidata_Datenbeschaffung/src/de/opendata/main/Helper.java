@@ -101,9 +101,7 @@ public class Helper {
 	 * restrict the logging messages that are shown on the console or to change
 	 * their formatting. See the documentation of Log4J for details on how to do
 	 * this.
-	 * 
-	 * @author Markus Kroetzsch
-	 * 
+	 * by Markus Kroetzsch
 	 */
 	public static void configureLogging() {
 		// Create the appender that will write log messages to the console.
@@ -255,8 +253,7 @@ public class Helper {
 	 * @param entityDocumentProcessor
 	 *            the object to use for processing entities in this dump
 	 * 
-	 * @author Markus Kroetzsch
-	 * @author Marco Kinkel
+	 * by Markus Kroetzsch and Marco Kinkel
 	 */
 	public static boolean processEntitiesFromWikidataDump(
 			EntityDocumentProcessor entityDocumentProcessor) {

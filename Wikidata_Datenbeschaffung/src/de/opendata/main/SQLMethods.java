@@ -78,7 +78,7 @@ public class SQLMethods {
 	}
 
 	/**
-	 * Creates and stores SQL statements for list of {@link entities.Item}s.
+	 * Creates and stores SQL statements for list of {@link de.opendata.entities.Item}s.
 	 * Statements get executed in {@link SQLMethods#executeQueries()}.
 	 * 
 	 * @param itemList
@@ -109,7 +109,7 @@ public class SQLMethods {
 	}
 
 	/**
-	 * Creates and stores SQL statements for {@link entities.WikidataObject}.
+	 * Creates and stores SQL statements for {@link de.opendata.entities.WikidataObject}.
 	 * Statements get executed in {@link SQLMethods#executeQueries()}.
 	 * 
 	 * @param wikidataObjectList
@@ -736,8 +736,11 @@ public class SQLMethods {
 	/**
 	 * Remove SQL-Injection-letters from texts
 	 * 
-	 * @param nameOfViewFile
-	 * 			name of .sql-File in view-folder (without ".sql")
+	 * @param raw
+	 * 			String to be checked for unallowed letters
+	 * @param isUrl
+	 * 			Is true if raw string is URL
+	 * @return String with no unallowed letters for SQL-statement
 	 */
 	public static String preventSQLinjection(String raw, boolean isUrl){
 		if(isUrl) {
