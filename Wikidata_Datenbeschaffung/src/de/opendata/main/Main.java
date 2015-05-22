@@ -1,18 +1,18 @@
 package de.opendata.main;
 
 /**
- * Main class to contain main mehthod
+ * Main class which contains main mehthod
  * 
- * @author Marco
+ * @author Marco Kinkel
  * @version 0.1
  */
 public class Main {
 	
-//	public static final String CUSTOM_PROPERTIES_PATH = "/opt/wikidata/config/custom_properties";
-//	public static final String DB_PROPERTIES_PATH = "/opt/wikidata/config/db_properties";
+	public static final String CUSTOM_PROPERTIES_PATH = "/opt/wikidata/config/custom_properties";
+	public static final String DB_PROPERTIES_PATH = "/opt/wikidata/config/db_properties";
 
-	public static final String CUSTOM_PROPERTIES_PATH = "./custom_properties";
-	public static final String DB_PROPERTIES_PATH = "./db_properties";
+//	public static final String CUSTOM_PROPERTIES_PATH = "./custom_properties";
+//	public static final String DB_PROPERTIES_PATH = "./db_properties";
 	
 	/**
 	 * Main method. Calls methods to clear database, read data from wikidata,

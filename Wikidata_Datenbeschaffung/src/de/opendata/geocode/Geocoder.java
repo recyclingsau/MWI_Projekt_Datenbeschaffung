@@ -4,6 +4,7 @@ import de.opendata.main.Helper;
 
 /**
  * class Geocoder
+ * Reads geocoordinates from DB, uses a webservice to get address information and stores them in DB
  * 
  * @author Anna Drützler
  * @version 0.1
@@ -11,6 +12,10 @@ import de.opendata.main.Helper;
 
 public class Geocoder {
 
+	/**
+	 * Runs the geocoder
+	 * @return Returns true if successful
+	 */
 	public static boolean runGeocoder() {
 
 		// Connect to Database

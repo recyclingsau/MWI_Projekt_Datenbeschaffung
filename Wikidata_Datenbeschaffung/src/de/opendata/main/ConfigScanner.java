@@ -7,6 +7,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
+/**
+ * Scanner to read configuration files
+ * 
+ * @author Marco Kinkel
+ * @version 0.1
+ */
 public class ConfigScanner {
 
 	private final File filePath;
@@ -22,6 +28,10 @@ public class ConfigScanner {
 		filePath = new File(fileName);
 	}
 
+	/**
+	 * Getter for filepath
+	 * @return filepath
+	 */
 	public File getFilePath() {
 		return filePath;
 	}
@@ -41,7 +51,7 @@ public class ConfigScanner {
 	}
 
 	/**
-	 * Overridable method for processing lines in different ways.
+	 * Process lines and store values in Helper-Fields
 	 */
 	protected void processLine(String line) {
 		Scanner scanner = new Scanner(line);

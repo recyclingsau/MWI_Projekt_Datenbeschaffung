@@ -31,10 +31,19 @@ public class WebserviceCall {
 	public String country_code;
 	public final String WEBSERVICEURL = "http://nominatim.openstreetmap.org/reverse?format=json";
 
+	/**
+	 * Empty constructor
+	 */
 	public WebserviceCall() {
 	}
 
-	// Calling web service for records.
+ 
+ /**
+  * Calling web service for records.
+  * @param lat Latitude of geo-coordinates in format "###.#####"
+  * @param lon Longitude of geo-coordinates in format "###.#####"
+  * @return Returns true if successful
+  */
 
 	public boolean fetchAdressInfo(String lat, String lon) {
 
@@ -93,7 +102,13 @@ public class WebserviceCall {
 		return true;
 	}
 
-	//
+	/**
+	 * Get value from Json-Object
+	 * @param key Value to read from JSON
+	 * @param o JSON-Object where value is stored
+	 * @return String-representation of value
+	 * @throws JSONException If JSON-Object cannot be parsed
+	 */
 	private String fetchValue(String key, JSONObject o) throws JSONException {
 		String ret;
 		if (o.has(key)) {

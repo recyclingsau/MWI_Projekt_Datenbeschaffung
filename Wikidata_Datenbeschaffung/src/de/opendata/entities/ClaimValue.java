@@ -11,6 +11,13 @@ public class ClaimValue {
 	public String value;
 	public Item.Datatype type;
 	
+	/**
+	 * Constructor
+	 * @param value
+	 * 			value of the claim
+	 * @param type
+	 * 			datatype of the value
+	 */
 	public ClaimValue(String value, Item.Datatype type){
 		this.value = value;
 		this.type = type;

@@ -42,6 +42,8 @@ public class DBCommunicator {
 	/**
 	 * Complete geo-data in wikidata SQL-DB
 	 * 
+	 * @return Returns true if successful
+	 * 
 	 * @author Anna Drützler
 	 * @author Marco Kinkel
 	 * **/
